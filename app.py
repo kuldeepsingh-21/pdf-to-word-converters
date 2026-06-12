@@ -33,7 +33,7 @@ def render_layout(title, content):
                 </nav>
             </div>
             <div class="text-xs font-mono text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200">
-                ADVANCED PAGE-SETUP MATRIX
+                AUTO-DETECT PAGE-SETUP v3.5
             </div>
         </header>
 
@@ -42,7 +42,7 @@ def render_layout(title, content):
         </main>
 
         <footer class="bg-[#161616] text-gray-400 text-center py-8 text-xs">
-            <p>&copy; 2026 Free PDF Convert. Page dimensions sandbox alignment module active.</p>
+            <p>&copy; 2026 Free PDF Convert. Intelligent aspect-ratio scaling node active.</p>
         </footer>
     </body>
     </html>
@@ -57,7 +57,7 @@ def home():
         <div class="max-w-6xl mx-auto mt-4">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-black text-gray-900 mb-2">Advanced Page Setup & Merger</h1>
-                <p class="text-gray-500 text-sm">Upload PDFs, change actual file layouts (Portrait/Landscape dimensions), adjust canvas zoom limits, and compile.</p>
+                <p class="text-gray-500 text-sm">Upload PDFs. Native layouts auto-detect. Modify setups, change text flow directions, scale views, and compile.</p>
             </div>
 
             <div id="upload-stage" class="bg-white p-10 rounded-2xl shadow-md border border-gray-200 text-center max-w-xl mx-auto">
@@ -73,7 +73,7 @@ def home():
             <div id="workspace-stage" class="hidden bg-white p-6 rounded-2xl shadow-md border border-gray-200">
                 <div class="flex flex-col sm:flex-row justify-between items-center border-b border-gray-200 pb-4 mb-6 gap-4">
                     <div class="flex items-center space-x-4">
-                        <span class="text-xs font-mono tracking-wider text-gray-400 uppercase">Zoom Layout Controller:</span>
+                        <span class="text-xs font-mono tracking-wider text-gray-400 uppercase">Live Canvas Zoom:</span>
                         <div class="bg-gray-100 p-1 rounded-lg flex items-center space-x-1 border border-gray-200">
                             <button onclick="adjustWorkspaceZoom(-15)" class="px-2 py-1 text-xs font-black text-gray-600 hover:bg-white rounded transition">-</button>
                             <span id="zoom-value" class="text-xs font-mono px-2 text-gray-700 font-bold">100%</span>
@@ -109,7 +109,6 @@ def home():
                 });
             }
 
-            // Dynamic Aspect Ratio Changer (Changes actual page setup layout canvas window)
             function changePageLayoutSetup(cardId, selectionValue) {
                 const targetCard = document.getElementById(cardId);
                 targetCard.setAttribute('data-layout', selectionValue);
@@ -142,25 +141,32 @@ def home():
 
                         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                             let pageId = "item-" + fileIdx + "-" + (pageNum - 1);
+                            let page = await pdf.getPage(pageNum);
+                            let viewport = page.getViewport({ scale: 1.0 });
                             
-                            // Initialize page context defaults
-                            globalPageMatrix.push({ fileIdx: fileIdx, pageIdx: pageNum - 1, layout: "portrait" });
+                            // AUTO-DETECT ORIENTATION: Find if original page is portrait or landscape
+                            let initialLayout = "portrait";
+                            if (viewport.width > viewport.height) {
+                                initialLayout = "landscape";
+                            }
+                            
+                            globalPageMatrix.push({ fileIdx: fileIdx, pageIdx: pageNum - 1, layout: initialLayout });
 
                             let card = document.createElement('div');
                             card.id = pageId;
-                            card.setAttribute('data-layout', 'portrait');
+                            card.setAttribute('data-layout', initialLayout);
                             card.className = "bg-white border border-gray-200 p-4 rounded-xl shadow-sm cursor-move select-none hover:border-[#e5322b] transition flex flex-col justify-between overflow-hidden gap-4";
                             card.draggable = true;
                             
+                            let aspectClass = (initialLayout === "landscape") ? "aspect-[4/3]" : "aspect-[3/4]";
                             let canvasBox = document.createElement('div');
-                            canvasBox.className = "canvas-viewport-box w-full aspect-[3/4] overflow-hidden bg-white border border-gray-300 rounded shadow-sm flex items-center justify-center origin-center transition-all duration-200";
+                            canvasBox.className = `canvas-viewport-box w-full ${aspectClass} overflow-hidden bg-white border border-gray-300 rounded shadow-sm flex items-center justify-center origin-center transition-all duration-200`;
                             
                             let canvas = document.createElement('canvas');
                             canvas.className = "w-full h-full object-contain";
                             canvasBox.appendChild(canvas);
                             card.appendChild(canvasBox);
 
-                            // Control Matrix Row
                             let controlRow = document.createElement('div');
                             controlRow.className = "flex flex-col gap-2 text-xs border-t border-gray-100 pt-3";
                             controlRow.innerHTML = `
@@ -172,15 +178,21 @@ def home():
                                 <div class="flex items-center justify-between gap-2 mt-1">
                                     <label class="text-[10px] text-gray-400 font-mono uppercase">Page Setup:</label>
                                     <select onchange="changePageLayoutSetup('${pageId}', this.value)" class="bg-gray-50 border border-gray-200 rounded px-1.5 py-1 text-gray-700 font-bold focus:outline-none focus:border-[#e5322b]">
-                                        <option value="portrait">Portrait Setup</option>
-                                        <option value="landscape">Landscape Setup</option>
+                                        <option value="portrait" ${initialLayout === "portrait" ? "selected" : ""}>Portrait Setup</option>
+                                        <option value="landscape" ${initialLayout === "landscape" ? "selected" : ""}>Landscape Setup</option>
                                     </select>
                                 </div>
                             `;
                             card.appendChild(controlRow);
                             grid.appendChild(card);
 
-                            renderThumb(pdf, pageNum, canvas);
+                            // Render visual page content thumbnail onto canvas element
+                            let context = canvas.getContext('2d');
+                            let thumbViewport = page.getViewport({ scale: 0.3 });
+                            canvas.height = thumbViewport.height;
+                            canvas.width = thumbViewport.width;
+                            page.render({ canvasContext: context, viewport: thumbViewport });
+
                             card.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', card.id));
                         }
                         setupDragAndDrop();
@@ -188,15 +200,6 @@ def home():
                     };
                     fileReader.readAsArrayBuffer(file);
                 }
-            }
-
-            async function renderThumb(pdfInstance, pageNum, canvasElement) {
-                let page = await pdfInstance.getPage(pageNum);
-                let viewport = page.getViewport({ scale: 0.4 });
-                let context = canvasElement.getContext('2d');
-                canvasElement.height = viewport.height;
-                canvasElement.width = viewport.width;
-                page.render({ canvasContext: context, viewport: viewport });
             }
 
             function setupDragAndDrop() {
@@ -239,8 +242,8 @@ def home():
                 if(globalPageMatrix.length === 0) return;
                 const btn = document.getElementById('merge-submit-btn');
                 btn.disabled = true;
-                btn.innerHTML = 'RE-INDEXING PAGE MATRIX...';
-                btn.className = "bg-gray-400 text-white font-black py-4 px-12 rounded-xl cursor-not-allowed text-lg uppercase tracking-wide animate-pulse";
+                btn.innerHTML = 'CONVERTING TEXT LAYOUTS & MERGING...';
+                btn.className = "w-full sm:w-auto bg-gray-400 text-white font-black py-4 px-12 rounded-xl cursor-not-allowed text-lg uppercase tracking-wide animate-pulse";
 
                 let formData = new FormData();
                 filesStorage.forEach((file, index) => { formData.append("file_" + index, file); });
@@ -256,7 +259,7 @@ def home():
                     let url = window.URL.createObjectURL(blob);
                     let a = document.createElement('a');
                     a.href = url;
-                    a.download = "layout_setup_document.pdf";
+                    a.download = "organized_setup_document.pdf";
                     document.body.appendChild(a);
                     a.click();
                     window.location.reload();
@@ -266,7 +269,6 @@ def home():
         '''
         return render_layout("Merge PDF Workspace", merge_html)
 
-    # Main fall-back home view
     return render_layout("Universal Hub", "<div class='text-center py-20'><a href='/?tool=merge' class='bg-[#e5322b] px-8 py-4 font-bold rounded-xl text-white shadow-xl hover:bg-red-700 uppercase text-sm tracking-widest'>Launch Page Setup Merger Workspace &rarr;</a></div>")
 
 @app.route('/execute-advanced-merge', methods=['POST'])
@@ -284,7 +286,6 @@ def execute_advanced_merge():
             saved_paths.append(path)
         out_file = os.path.join(UPLOAD_FOLDER, "layout_merged_output.pdf")
         
-        # Call the updated dimensional transformation matrix engine
         pdf_tools.merge_with_page_setup(uploaded_files_map, page_order_plan, out_file)
         
         return send_file(out_file, as_attachment=True)
