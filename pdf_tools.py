@@ -8,13 +8,19 @@ def compress_pdf(in_path, out_path):
     for page in writer.pages: page.compress_content_streams()
     with open(out_path, "wb") as f: writer.write(f)
 
+def split_pdf_first_page(in_path, out_path):
+    reader = PdfReader(in_path)
+    writer = PdfWriter()
+    if len(reader.pages) > 0: writer.add_page(reader.pages[0])
+    with open(out_path, "wb") as f: writer.write(f)
+
 def repair_pdf(in_path, out_path):
     reader = PdfReader(in_path)
     writer = PdfWriter()
     for page in reader.pages: writer.add_page(page)
     with open(out_path, "wb") as f: writer.write(f)
 
-# --- ADVANCED AFFINE SCALING & OUT-OF-BOUNDS CONTENT RESCALE LOGIC ---
+# --- ADVANCED CONTENT-CONTAINMENT MERGER ENGINE ---
 def merge_with_affine_scaling(uploaded_files_dict, page_order_list, target_size_setup, out_path):
     writer = PdfWriter()
     readers = {}
@@ -32,41 +38,42 @@ def merge_with_affine_scaling(uploaded_files_dict, page_order_list, target_size_
             orig_width = float(orig_page.mediabox.width)
             orig_height = float(orig_page.mediabox.height)
             
-            # Step 1: Establish Strict Standard Target Canvas Boundary Geometries (A4 vs Letter vs Original)
+            # Step 1: Establish Standard Dimensions
             if target_size_setup == "A4":
                 new_w, new_h = (595.0, 842.0) if requested_layout == "portrait" else (842.0, 595.0)
             elif target_size_setup == "LETTER":
                 new_w, new_h = (612.0, 792.0) if requested_layout == "portrait" else (792.0, 612.0)
             else:
-                # Default "original" dimension tracking
                 new_w, new_h = (orig_width, orig_height) if requested_layout == "portrait" else (orig_height, orig_width)
                 if requested_layout == "landscape" and orig_height > orig_width:
                     new_w, new_h = (orig_height, orig_width)
                 elif requested_layout == "portrait" and orig_width > orig_height:
                     new_w, new_h = (orig_height, orig_width)
 
-            # Create an empty, normalized target container canvas sheet matching the exact setup dimensions
             blank_canvas = PageObject.create_blank_page(width=new_w, height=new_h)
             
-            # Step 2: Compute Aspect Ratios to enforce strict containment guidelines (Prevents Out-Of-Bounds Clipping)
+            # Step 2: Proportional Matrix Scale Calculation (Fixes Content Overflow Bug)
             scale_w = new_w / orig_width
+            scale_w_rot = new_w / orig_height
             scale_h = new_h / orig_height
-            scale_factor = min(scale_w, scale_h) # Affine matrix scaling operator
+            scale_h_rot = new_h / orig_width
             
-            # Step 3: Compute exact offset shifts to center text content layers perfectly
-            fit_width = orig_width * scale_factor
-            fit_height = orig_height * scale_factor
-            tx = (new_w - fit_width) / 2.0
-            ty = (new_h - fit_height) / 2.0
-            
-            # Step 4: Construct transformation matrix arrays and merge the source layers safely
-            transform = Transformation().scale(scale_factor).translate(tx, ty)
-            
-            # High-Tech Alignment Logic: If orientation setup changes, spin the core content matrix inside the canvas boundaries
+            # Step 3: Map Translation Vectors and Transform Layers without Clipping
             if requested_layout == "landscape" and orig_height > orig_width:
+                scale_factor = min(scale_w_rot, scale_h_rot)
+                tx = (new_w - (orig_height * scale_factor)) / 2.0
+                ty = (new_h - (orig_width * scale_factor)) / 2.0
                 transform = Transformation().rotate(90).scale(scale_factor).translate(new_w - tx, ty)
             elif requested_layout == "portrait" and orig_width > orig_height:
+                scale_factor = min(scale_w_rot, scale_h_rot)
+                tx = (new_w - (orig_height * scale_factor)) / 2.0
+                ty = (new_h - (orig_width * scale_factor)) / 2.0
                 transform = Transformation().rotate(-90).scale(scale_factor).translate(tx, new_h - ty)
+            else:
+                scale_factor = min(scale_w, scale_h)
+                tx = (new_w - (orig_width * scale_factor)) / 2.0
+                ty = (new_h - (orig_height * scale_factor)) / 2.0
+                transform = Transformation().scale(scale_factor).translate(tx, ty)
                 
             blank_canvas.merge_transformed_page(orig_page, transform)
             writer.add_page(blank_canvas)
