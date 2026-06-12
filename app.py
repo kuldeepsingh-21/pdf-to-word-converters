@@ -8,6 +8,10 @@ import converter_tools
 app = Flask(__name__)
 UPLOAD_FOLDER = '/tmp'
 
+# OPERATIONAL PROCESSING RESTRAINT LIMITS
+MAX_FILE_SIZE_MB = 100
+MAX_TOTAL_SIZE_MB = 300
+
 def render_layout(title, content):
     return f'''
     <!doctype html>
@@ -34,8 +38,8 @@ def render_layout(title, content):
                     <a href="/" class="text-[#e5322b] border-b-2 border-[#e5322b] pb-1">All Tools</a>
                 </nav>
             </div>
-            <div class="text-sm font-medium text-gray-600">
-                <a href="/about" class="hover:text-[#e5322b]">About Us</a>
+            <div class="text-xs font-mono text-gray-400 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full shadow-inner">
+                SANDBOX PRO V4.8
             </div>
         </header>
 
@@ -44,7 +48,13 @@ def render_layout(title, content):
         </main>
 
         <footer class="bg-[#161616] text-gray-400 text-center py-6 text-xs">
-            <p>&copy; 2026 Free PDF Convert. Secure in-memory data normalization grids active.</p>
+            <div class="flex flex-wrap justify-center space-x-6 mb-3 text-sm">
+                <a href="/about" class="hover:text-white transition">About Us</a>
+                <a href="/privacy" class="hover:text-white transition">Privacy Policy</a>
+                <a href="/terms" class="hover:text-white transition">Terms & Conditions</a>
+                <a href="/contact" class="hover:text-white transition">Contact Us</a>
+            </div>
+            <p class="text-gray-500">&copy; 2026 Free PDF Convert. Secure in-browser caching protocols enforced.</p>
         </footer>
     </body>
     </html>
@@ -54,25 +64,26 @@ def render_layout(title, content):
 def home():
     selected_tool = request.args.get('tool')
 
-    # --- 1. MERGE PDF ADVANCED INTERACTIVE CANVAS WORKSPACE ---
+    # --- MERGE WORKSPACE ---
     if selected_tool == 'merge':
         merge_html = '''
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-6">
                 <h1 class="text-3xl font-black text-gray-900 mb-1">Merge PDF Workspace</h1>
-                <p class="text-gray-500 text-sm">Autodetects landscape properties. Adjust canvas dimensions without twisting the core text layout blocks.</p>
+                <p class="text-gray-500 text-sm">Auto-aligns portrait/landscape bounds while preserving form field data natively.</p>
             </div>
             <div id="upload-stage" class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center max-w-xl mx-auto">
                 <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-12 bg-gray-50 transition cursor-pointer" onclick="document.getElementById('merge-files').click()">
                     <input type="file" id="merge-files" multiple accept=".pdf" class="hidden" onchange="loadPDFsToSetupWorkspace(this.files, 'merge')">
                     <p class="text-base font-bold text-gray-700">Select Multiple PDF Files</p>
+                    <p class="text-[10px] text-gray-400 mt-1">Limits: 100MB per file, 300MB total execution memory cap.</p>
                 </div>
             </div>
             <div id="workspace-stage" class="hidden bg-white p-6 rounded-2xl shadow-md border border-gray-200">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-200 pb-4 mb-6 gap-4">
                     <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
                         <div class="flex flex-col">
-                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1">Global Size Override</label>
+                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1">Page Sizing Setup</label>
                             <select id="global-size-setup" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700">
                                 <option value="original">Original Sizing Matrix (Dynamic Fit)</option>
                                 <option value="A4">Standard A4 Canvas (595 × 842 pt)</option>
@@ -80,7 +91,7 @@ def home():
                             </select>
                         </div>
                         <div class="flex flex-col">
-                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1">Workspace Zoom</label>
+                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1">Grid Zoom</label>
                             <div class="bg-gray-100 p-1 rounded-lg flex items-center space-x-1 border border-gray-200 h-8">
                                 <button onclick="adjustWorkspaceZoom(-10)" class="px-2 text-xs font-black text-gray-600 hover:bg-white rounded">-</button>
                                 <span id="zoom-value" class="text-xs font-mono px-2 text-gray-700 font-bold">100%</span>
@@ -99,13 +110,13 @@ def home():
         ''' + self_contained_javascript_logic()
         return render_layout("Merge PDF Workspace", merge_html)
 
-    # --- 2. VISUAL SPLIT PDF WORKSPACE (DYNAMIC SEPARATE PAGES INSIDE COMPRESSED ZIP) ---
+    # --- SPLIT WORKSPACE ---
     if selected_tool == 'split':
         split_html = '''
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-6">
-                <h1 class="text-3xl font-black text-gray-900 mb-1">Visual Split & Page Extractor</h1>
-                <p class="text-gray-500 text-sm">Explode pages visually, inspect layouts at full size, rearrange orders, and download individual pages packed inside a ZIP folder.</p>
+                <h1 class="text-3xl font-black text-gray-900 mb-1">Visual Split Studio</h1>
+                <p class="text-gray-500 text-sm">Explode file pages visually, remove items, and bundle everything into a cleanly structured ZIP download archive.</p>
             </div>
             <div id="upload-stage" class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center max-w-xl mx-auto">
                 <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-12 bg-gray-50 transition cursor-pointer" onclick="document.getElementById('split-file').click()">
@@ -115,7 +126,7 @@ def home():
             </div>
             <div id="workspace-stage" class="hidden bg-white p-6 rounded-2xl shadow-md border border-gray-200">
                 <div class="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Page Extractor Workspace</span>
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Visual Page Array Extraction Manager</span>
                     <span id="page-count-display" class="text-xs font-mono font-bold bg-red-50 text-[#e5322b] px-2 py-1 rounded">0 Pages Loaded</span>
                 </div>
                 <div id="pages-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-4 bg-gray-50 rounded-xl min-h-[200px]"></div>
@@ -129,15 +140,15 @@ def home():
         ''' + self_contained_javascript_logic()
         return render_layout("Split PDF Workspace", split_html)
 
-    # --- 3. STANDARD FORM UPLOADER FOR OTHER MODULE UTILITIES ---
+    # --- SINGLE FILE CONVERTERS ---
     if selected_tool:
-        tool_titles = {'compress': 'Compress PDF Engine', 'pdf2word': 'PDF to Word Converter', 'img2pdf': 'Image to PDF Converter', 'repair': 'PDF Structural Repair Tool', 'resize': 'Image Resolution Sizer', 'enhance': 'Image Contrast Enhancer'}
-        title = tool_titles.get(selected_tool, "Converter Processing Module")
-        accept_types = "image/*" if selected_tool in ['resize', 'enhance', 'img2pdf'] else ".pdf"
+        tool_titles = {'compress': 'Compress PDF Engine', 'pdf2word': 'PDF to Word Converter', 'img2pdf': 'Image to PDF Converter'}
+        title = tool_titles.get(selected_tool, "Converter Module")
+        accept_types = "image/*" if selected_tool in ['img2pdf'] else ".pdf"
         upload_html = f'''
         <div class="max-w-xl mx-auto bg-white p-10 rounded-2xl shadow-md border border-gray-200 text-center mt-6">
             <h1 class="text-2xl font-black text-gray-900 mb-2">{title}</h1>
-            <form method="POST" action="/process-file" enctype="multipart/form-data" onsubmit="document.getElementById('sub-btn').disabled=true; document.getElementById('sub-btn').textContent='CONVERTING...';">
+            <form method="POST" action="/process-file" enctype="multipart/form-data" onsubmit="document.getElementById('sub-btn').disabled=true; document.getElementById('sub-btn').textContent='PROCESSING...';">
                 <input type="hidden" name="operation" value="{selected_tool}">
                 <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-10 bg-gray-50 mb-6 relative">
                     <input type="file" name="file" accept="{accept_types}" required class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" onchange="document.getElementById('fn-dsp').textContent = this.files[0].name">
@@ -149,7 +160,7 @@ def home():
         '''
         return render_layout(title, upload_html)
 
-    # --- 4. MASTER RED AND WHITE iLOVEPDF THEME CARDS HOMEPAGE ---
+    # --- MASTER CARDS GRID HOMEPAGE ---
     grid_html = '''
     <div class="text-center my-8">
         <h1 class="text-4xl font-black text-gray-900 tracking-tight sm:text-5xl">Every tool you need to work with PDFs</h1>
@@ -159,17 +170,17 @@ def home():
         <a href="/?tool=merge" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div>
             <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Merge PDF Workspace</h3>
-            <p class="text-gray-500 text-xs leading-relaxed">Combine multiple PDFs, manage canvas aspect sizes, and preserve unrotated font rows cleanly.</p>
+            <p class="text-gray-500 text-xs leading-relaxed">Combine multiple PDFs, manage canvas aspect configurations, and preserve upright fonts cleanly.</p>
         </a>
         <a href="/?tool=split" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></div>
-            <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Split PDF (ZIP folder out)</h3>
-            <p class="text-gray-500 text-xs leading-relaxed">Visually extract separate page items, review close-up canvases, and export to compressed ZIP.</p>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Split PDF (ZIP out)</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Visually extract separate page items, review close-up canvases, and export to compressed ZIP archives.</p>
         </a>
         <a href="/?tool=compress" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg></div>
-            <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Compress PDF Engine</h3>
-            <p class="text-gray-500 text-xs leading-relaxed">Deep deflation compression matrix utilities to reliably reduce heavy file sizes down.</p>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Compress PDF Suite</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Deep deflation compression matrix utilities to reliably reduce heavy file sizes down safely.</p>
         </a>
         <a href="/?tool=pdf2word" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-blue-600 mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg></div>
@@ -180,14 +191,13 @@ def home():
     '''
     return render_layout("All PDF Tools", grid_html)
 
-# --- BACKEND ENDPOINT ACTIONS SYSTEM ROUTERS ---
 def self_contained_javascript_logic():
     return '''
     <div id="inspector-modal" class="hidden fixed inset-0 bg-black/80 z-50 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col justify-between shadow-2xl relative">
             <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-2xl">
-                <h3 id="inspector-title" class="text-sm font-bold text-gray-700 truncate max-w-md">Document Full Size Viewport</h3>
-                <button onclick="document.getElementById('inspector-modal').classList.add('hidden')" class="bg-gray-200 hover:bg-red-600 hover:text-white text-gray-700 font-black px-3 py-1.5 rounded-lg text-xs">✕ Close Full Size</button>
+                <h3 id="inspector-title" class="text-sm font-bold text-gray-700 truncate max-w-md">Document Inspector Viewport</h3>
+                <button onclick="document.getElementById('inspector-modal').classList.add('hidden')" class="bg-gray-200 hover:bg-red-600 hover:text-white text-gray-700 font-black px-3 py-1.5 rounded-lg text-xs">✕ Close Size</button>
             </div>
             <div class="flex-grow p-4 overflow-auto bg-gray-100 flex items-center justify-center">
                 <canvas id="inspector-canvas" class="max-w-full max-h-full shadow-md rounded bg-white object-contain"></canvas>
@@ -197,6 +207,7 @@ def self_contained_javascript_logic():
 
     <script>
         let filesStorage = []; let globalPageMatrix = []; let currentZoom = 100; let loadedDocsMap = {};
+        const SIZE_LIMIT_BYTES = 100 * 1024 * 1024; const TOTAL_LIMIT_BYTES = 300 * 1024 * 1024;
 
         function adjustWorkspaceZoom(val) {
             currentZoom = Math.max(60, Math.min(150, currentZoom + val));
@@ -208,11 +219,11 @@ def self_contained_javascript_logic():
             const modal = document.getElementById('inspector-modal');
             const canvas = document.getElementById('inspector-canvas');
             modal.classList.remove('hidden');
-            document.getElementById('inspector-title').textContent = `Full Page Inspector - Page ${pageNum}`;
+            document.getElementById('inspector-title').textContent = `Full Page Close-up View - Page ${pageNum}`;
             let pdfDoc = loadedDocsMap[fileKey];
             if (pdfDoc) {
                 pdfDoc.getPage(pageNum).then(page => {
-                    let ctx = canvas.getContext('2d'); let viewport = page.getViewport({ scale: 1.5 });
+                    let ctx = canvas.getContext('2d'); let viewport = page.getViewport({ scale: 1.4 });
                     canvas.height = viewport.height; canvas.width = viewport.width;
                     page.render({ canvasContext: ctx, viewport: viewport });
                 });
@@ -228,6 +239,15 @@ def self_contained_javascript_logic():
 
         async function loadPDFsToSetupWorkspace(files) {
             if (!files.length) return;
+            
+            // File Size Restriction Enforcement Matrix
+            let totalAddedSize = 0;
+            for(let i=0; i<files.length; i++) {
+                if(files[i].size > SIZE_LIMIT_BYTES) { alert(`File ${files[i].name} exceeds the 100MB parameter limit restriction.`); return; }
+                totalAddedSize += files[i].size;
+            }
+            if(totalAddedSize > TOTAL_LIMIT_BYTES) { alert("Total file payload blocks exceed the 300MB buffer memory limit layout."); return; }
+
             document.getElementById('upload-stage').classList.add('hidden');
             document.getElementById('workspace-stage').classList.remove('hidden');
             const grid = document.getElementById('pages-grid');
@@ -242,7 +262,7 @@ def self_contained_javascript_logic():
                         let pageId = "item-" + fileIdx + "-" + (pageNum - 1);
                         let page = await pdf.getPage(pageNum); let nativeViewport = page.getViewport({ scale: 1.0 });
                         
-                        // AUTO-DETECT LANDSCAPE PACKETS: Displays horizontally from start if original width is wider
+                        // LANDSCAPE AUTO-DETECTION: Handles native layout parameters horizontally from the start
                         let initialLayout = (nativeViewport.width > nativeViewport.height) ? "landscape" : "portrait";
                         globalPageMatrix.push({ fileIdx: fileIdx, pageIdx: pageNum - 1, layout: initialLayout });
 
@@ -283,7 +303,8 @@ def self_contained_javascript_logic():
         }
 
         async function loadPDFToSplitWorkspace(file) {
-            if (!file) return; targetSplitFile = file;
+            if (!file) return; if(file.size > SIZE_LIMIT_BYTES) { alert("File limits exceed the 100MB target boundary."); return; }
+            targetSplitFile = file;
             document.getElementById('upload-stage').classList.add('hidden'); document.getElementById('workspace-stage').classList.remove('hidden');
             const grid = document.getElementById('pages-grid'); grid.innerHTML = "";
             let fileReader = new FileReader();
@@ -346,13 +367,19 @@ def self_contained_javascript_logic():
 
         function submitPageSetupMerge() {
             if(globalPageMatrix.length === 0) return;
-            const btn = document.getElementById('merge-submit-btn'); btn.disabled = true; btn.innerHTML = 'SCALING AND COMPILING TEXT FLOWS...';
+            const btn = document.getElementById('merge-submit-btn'); btn.disabled = true; btn.innerHTML = 'PROCESSING CHANNELS...';
             let formData = new FormData(); filesStorage.forEach((file, index) => { formData.append("file_" + index, file); });
             formData.append('global_size_setup', document.getElementById('global-size-setup').value);
             formData.append('layout_plan', JSON.stringify(globalPageMatrix.map(item => ({ fileId: "file_" + item.fileIdx, pageIdx: item.pageIdx, layout: item.layout }))));
-            fetch('/execute-advanced-merge', { method: 'POST', body: formData }).then(res => res.blob()).then(blob => {
+            fetch('/execute-advanced-merge', { method: 'POST', body: formData })
+            .then(res => {
+                if(!res.ok) return res.text().then(text => { throw new Error(text) });
+                return res.blob();
+            })
+            .then(blob => {
                 let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "merged_output_document.pdf"; a.click(); window.location.reload();
-            });
+            })
+            .catch(err => { alert(err.message); window.location.reload(); });
         }
 
         function submitVisualSplit() {
@@ -381,7 +408,7 @@ def execute_advanced_merge():
         out_file = os.path.join(UPLOAD_FOLDER, "normalized_merged_output.pdf")
         pdf_tools.merge_with_affine_scaling(uploaded_files_map, page_order_plan, size_setup, out_file)
         return send_file(out_file, as_attachment=True)
-    except Exception as e: return str(e), 500
+    except Exception as e: return str(e), 400
     finally:
         for p in saved_paths:
             if os.path.exists(p): os.remove(p)
