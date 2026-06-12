@@ -1,3 +1,10 @@
+import os
+from flask import Flask, render_template, request, send_file
+from pdf2docx import Converter
+
+app = Flask(__name__)
+UPLOAD_FOLDER = '/tmp'  # Writable directory on Render
+
 @app.route('/')
 def index():
     return '''
@@ -83,3 +90,32 @@ def index():
     </body>
     </html>
     '''
+
+@app.route('/convert', methods=['POST'])
+def convert_pdf():
+    if 'file' not in request.files:
+        return "No file uploaded", 400
+    
+    file = request.files['file']
+    if file.filename == '' or not file.filename.endswith('.pdf'):
+        return "Invalid file selection", 400
+
+    pdf_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(pdf_path)
+    
+    docx_filename = file.filename.replace('.pdf', '.docx')
+    docx_path = os.path.join(UPLOAD_FOLDER, docx_filename)
+    
+    try:
+        cv = Converter(pdf_path)
+        cv.convert(docx_path, start=0, end=None)
+        cv.close()
+        return send_file(docx_path, as_attachment=True)
+    except Exception as e:
+        return f"An error occurred during conversion: {str(e)}", 500
+    finally:
+        if os.path.exists(pdf_path): 
+            os.remove(pdf_path)
+
+if __name__ == '__main__':
+    app.run(debug=True)
