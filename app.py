@@ -28,8 +28,8 @@ def render_layout(title, content):
                 </a>
                 
                 <nav class="hidden lg:flex space-x-6 text-sm font-bold text-gray-700 uppercase tracking-wide">
-                    <a href="/?tool=merge" class="hover:text-[#e5322b] transition">Merge PDF</a>
-                    <a href="/?tool=split" class="hover:text-[#e5322b] transition">Split PDF</a>
+                    <a href="/?tool=compress" class="hover:text-[#e5322b] transition">Merge PDF</a>
+                    <a href="/?tool=repair" class="hover:text-[#e5322b] transition">Split PDF</a>
                     <a href="/?tool=compress" class="hover:text-[#e5322b] transition">Compress PDF</a>
                     <a href="/?tool=pdf2word" class="hover:text-[#e5322b] transition">Convert PDF</a>
                     <a href="/" class="text-[#e5322b] border-b-2 border-[#e5322b] pb-1">All PDF Tools</a>
@@ -63,7 +63,6 @@ def render_layout(title, content):
 def home():
     selected_tool = request.args.get('tool')
 
-    # IF A SPECIFIC TOOL IS CLICKED FROM THE MENU OR GRID, SHOW ITS UPLOAD SCREEN:
     if selected_tool:
         tool_titles = {
             'pdf2word': 'Convert PDF to Word',
@@ -79,7 +78,7 @@ def home():
         upload_html = f'''
         <div class="max-w-xl mx-auto bg-white p-10 rounded-2xl shadow-xl border border-gray-200 text-center mt-6">
             <h1 class="text-3xl font-black text-gray-900 mb-2">{title}</h1>
-            <p class="text-gray-500 text-sm mb-8">Upload your file below to process it safely through our high-speed engine grids.</p>
+            <p class="text-gray-500 text-sm mb-8">Upload your file below to process it safely.</p>
             
             <form method="POST" action="/process-file" enctype="multipart/form-data" onsubmit="showLoading(this)">
                 <input type="hidden" name="operation" value="{selected_tool}">
@@ -105,18 +104,17 @@ def home():
             function showLoading(form) {
                 const btn = form.querySelector('button[type="submit"]');
                 btn.disabled = true;
-                btn.innerHTML = `<span class="animate-pulse">PROCESSING FILE... PLEASE WAIT</span>`;
-                btn.className = "w-full bg-gray-400 text-white font-extrabold py-4 px-6 rounded-xl cursor-not-allowed text-lg uppercase tracking-wider";
+                btn.innerHTML = 'PROCESSING FILE... PLEASE WAIT';
+                btn.className = "w-full bg-gray-400 text-white font-extrabold py-4 px-6 rounded-xl cursor-not-allowed text-lg uppercase tracking-wider animate-pulse";
             }
         </script>
         '''
         return render_layout(title, upload_html)
 
-    # ELSE: SHOW THE MAIN ILOVEPDF GRID PAGE WITH ALL THE TOOLS DISPLAYED AS CARDS
     grid_html = '''
     <div class="text-center my-8">
         <h1 class="text-4xl font-black text-[#1f2430] tracking-tight sm:text-5xl">Every tool you need to work with PDFs</h1>
-        <p class="mt-3 text-lg text-gray-600 max-w-2xl mx-auto">Every file conversion utility is 100% free and easy to use! Merge, split, compress, and convert document frameworks inside your browser.</p>
+        <p class="mt-3 text-lg text-gray-600 max-w-2xl mx-auto">Every file conversion utility is 100% free and easy to use!</p>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
@@ -134,7 +132,7 @@ def home():
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </div>
             <h3 class="text-xl font-black text-gray-900 group-hover:text-[#e5322b] mb-1">Split PDF</h3>
-            <p class="text-gray-500 text-sm leading-relaxed">Extract one or multiple pages from your PDF or convert each page to an independent file template.</p>
+            <p class="text-gray-500 text-sm leading-relaxed">Extract one or multiple pages from your PDF template cleanly.</p>
         </a>
 
         <a href="/?tool=compress" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
@@ -142,7 +140,7 @@ def home():
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
             </div>
             <h3 class="text-xl font-black text-gray-900 group-hover:text-[#e5322b] mb-1">Compress PDF</h3>
-            <p class="text-gray-500 text-sm leading-relaxed">Reduce file size while optimizing for maximal PDF layout structural preservation quality.</p>
+            <p class="text-gray-500 text-sm leading-relaxed">Reduce file size while optimizing for maximal PDF layout structure.</p>
         </a>
 
         <a href="/?tool=pdf2word" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
@@ -150,7 +148,7 @@ def home():
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
             </div>
             <h3 class="text-xl font-black text-gray-900 group-hover:text-blue-600 mb-1">PDF to Word</h3>
-            <p class="text-gray-500 text-sm leading-relaxed">Convert your structural PDF files directly into fully editable Microsoft Word .docx profiles.</p>
+            <p class="text-gray-500 text-sm leading-relaxed">Convert your structural PDF files directly into fully editable Microsoft Word documents.</p>
         </a>
 
         <a href="/?tool=img2pdf" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
@@ -158,7 +156,7 @@ def home():
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             </div>
             <h3 class="text-xl font-black text-gray-900 group-hover:text-emerald-600 mb-1">Image to PDF</h3>
-            <p class="text-gray-500 text-sm leading-relaxed">Pack your JPG or PNG graphics smoothly down into uniform portable vector document sheets.</p>
+            <p class="text-gray-500 text-sm leading-relaxed">Pack your JPG or PNG graphics smoothly down into uniform portable PDF documents.</p>
         </a>
 
         <a href="/?tool=repair" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
@@ -166,7 +164,7 @@ def home():
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.36 1.252.588 1.81l-3.97 2.885a1 1 0 00-.364 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.971-2.885a1 1 0 00-1.18 0l-3.97 2.885c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118l-3.97-2.885c-.772-.558-.372-1.81.588-1.81h4.906a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
             </div>
             <h3 class="text-xl font-black text-gray-900 group-hover:text-amber-600 mb-1">Repair PDF</h3>
-            <p class="text-gray-500 text-sm leading-relaxed">Recover and fix data blocks from corrupt, broken, or unreadable PDF file architectures.</p>
+            <p class="text-gray-500 text-sm leading-relaxed">Recover data blocks from corrupt, broken, or unreadable PDF file structures.</p>
         </a>
 
         <a href="/?tool=resize" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
@@ -174,7 +172,7 @@ def home():
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"></path></svg>
             </div>
             <h3 class="text-xl font-black text-gray-900 group-hover:text-purple-600 mb-1">Resize & Compress Image</h3>
-            <p class="text-gray-500 text-sm leading-relaxed">Shrink image pixel layouts parameters down by 50% to save storage space.</p>
+            <p class="text-gray-500 text-sm leading-relaxed">Shrink image pixel layouts down by 50% to save storage space.</p>
         </a>
 
         <a href="/?tool=enhance" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
@@ -182,7 +180,7 @@ def home():
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
             </div>
             <h3 class="text-xl font-black text-gray-900 group-hover:text-fuchsia-600 mb-1">Enhance Photo Matrix</h3>
-            <p class="text-gray-500 text-sm leading-relaxed">Amplify color contrast depths computational layer matrices to clean muddy photos.</p>
+            <p class="text-gray-500 text-sm leading-relaxed">Amplify color contrast depths to clean up muddy photos.</p>
         </a>
 
     </div>
@@ -211,7 +209,6 @@ def process_file():
             out_path = os.path.join(UPLOAD_FOLDER, "compressed_" + file.filename)
             pdf_tools.compress_pdf(in_path, out_path)
         elif operation == 'repair' or operation == 'split':
-            # Split and Repair maps structurally to our cross-ref stream rebuilder
             out_path = os.path.join(UPLOAD_FOLDER, "processed_" + file.filename)
             pdf_tools.repair_pdf(in_path, out_path)
         elif operation == 'resize':
@@ -231,22 +228,21 @@ def process_file():
         if os.path.exists(in_path): 
             os.remove(in_path)
 
-# --- BRANDING AND REGULATORY METADATA PAGES ---
 @app.route('/about')
 def page_about(): 
-    return render_layout("About Us", "<div class='bg-white p-8 rounded-xl border border-gray-200 shadow-sm'><h1 class='text-2xl font-black mb-4'>About Us</h1><p class='text-gray-600 leading-relaxed'>Free PDF Convert builds top-tier cloud document rendering infrastructure. All operations complete inside safe server environments.</p></div>")
+    return render_layout("About Us", "<div class='bg-white p-8 rounded-xl border border-gray-200 shadow-sm'><h1 class='text-2xl font-black mb-4'>About Us</h1><p class='text-gray-600 leading-relaxed'>Free PDF Convert builds top-tier cloud document rendering infrastructure.</p></div>")
 
 @app.route('/privacy')
 def page_privacy(): 
-    return render_layout("Privacy", "<div class='bg-white p-8 rounded-xl border border-gray-200 shadow-sm'><h1 class='text-2xl font-black mb-4'>Privacy Policy</h1><p class='text-gray-600 leading-relaxed'>Your records are entirely yours. Data parameters completely wipe from system cache arrays upon transaction completion steps.</p></div>")
+    return render_layout("Privacy", "<div class='bg-white p-8 rounded-xl border border-gray-200 shadow-sm'><h1 class='text-2xl font-black mb-4'>Privacy Policy</h1><p class='text-gray-600 leading-relaxed'>Your records are entirely yours. Data parameters completely wipe from system cache arrays upon transaction completion.</p></div>")
 
 @app.route('/terms')
 def page_terms(): 
-    return render_layout("Terms", "<div class='bg-white p-8 rounded-xl border border-gray-200 shadow-sm'><h1 class='text-2xl font-black mb-4'>Terms & Conditions</h1><p class='text-gray-600 leading-relaxed'>Use of the conversion pipeline structure is totally open-source and provided free of charge under sandboxed configurations.</p></div>")
+    return render_layout("Terms", "<div class='bg-white p-8 rounded-xl border border-gray-200 shadow-sm'><h1 class='text-2xl font-black mb-4'>Terms & Conditions</h1><p class='text-gray-600 leading-relaxed'>Use of the conversion pipeline structure is open-source and provided free of charge.</p></div>")
 
 @app.route('/contact')
 def page_contact(): 
-    return render_layout("Contact", "<div class='bg-white p-8 rounded-xl border border-gray-200 shadow-sm'><h1 class='text-2xl font-black mb-4'>Contact Us</h1><p class='text-gray-600 leading-relaxed'>For platform issues or security pipeline questions, communicate with support lines at <b>support@freepdfconvert.com</b></p></div>")
+    return render_layout("Contact", "<div class='bg-white p-8 rounded-xl border border-gray-200 shadow-sm'><h1 class='text-2xl font-black mb-4'>Contact Us</h1><p class='text-gray-600 leading-relaxed'>Contact us at support@freepdfconvert.com</p></div>")
 
 if __name__ == '__main__':
     app.run(debug=True)
