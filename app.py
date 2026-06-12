@@ -15,7 +15,7 @@ def render_layout(title, content):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{title} - Free PDF Convert Pro</title>
+        <title>{title} - Free PDF Convert</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     </head>
@@ -34,8 +34,8 @@ def render_layout(title, content):
                     <a href="/" class="text-[#e5322b] border-b-2 border-[#e5322b] pb-1">All Tools</a>
                 </nav>
             </div>
-            <div class="text-xs font-mono text-gray-400 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full">
-                MATRIX SCALING v4.5 ONLINE
+            <div class="text-sm font-medium text-gray-600">
+                <a href="/about" class="hover:text-[#e5322b]">About Us</a>
             </div>
         </header>
 
@@ -43,8 +43,8 @@ def render_layout(title, content):
             {content}
         </main>
 
-        <footer class="bg-[#161616] text-gray-400 text-center py-6 text-xs border-t border-gray-800">
-            <p>&copy; 2026 Free PDF Convert Pro. Memory-sandboxed vector engine modules active.</p>
+        <footer class="bg-[#161616] text-gray-400 text-center py-6 text-xs">
+            <p>&copy; 2026 Free PDF Convert. Secure in-memory data normalization grids active.</p>
         </footer>
     </body>
     </html>
@@ -54,13 +54,13 @@ def render_layout(title, content):
 def home():
     selected_tool = request.args.get('tool')
 
-    # --- 1. ADVANCED MERGE PDF WORKSPACE ---
+    # --- 1. MERGE PDF ADVANCED INTERACTIVE CANVAS WORKSPACE ---
     if selected_tool == 'merge':
         merge_html = '''
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-6">
-                <h1 class="text-3xl font-black text-gray-900 mb-1">Merge PDF Studio</h1>
-                <p class="text-gray-500 text-sm">Autodetects landscape properties. Re-dimensions canvas containers dynamically while protecting core text alignments.</p>
+                <h1 class="text-3xl font-black text-gray-900 mb-1">Merge PDF Workspace</h1>
+                <p class="text-gray-500 text-sm">Autodetects landscape properties. Adjust canvas dimensions without twisting the core text layout blocks.</p>
             </div>
             <div id="upload-stage" class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center max-w-xl mx-auto">
                 <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-12 bg-gray-50 transition cursor-pointer" onclick="document.getElementById('merge-files').click()">
@@ -72,15 +72,15 @@ def home():
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-200 pb-4 mb-6 gap-4">
                     <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
                         <div class="flex flex-col">
-                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1">Target Page Sizing</label>
+                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1">Global Size Override</label>
                             <select id="global-size-setup" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700">
                                 <option value="original">Original Sizing Matrix (Dynamic Fit)</option>
-                                <option value="A4">Standard A4 Layout (595 × 842 pt)</option>
-                                <option value="LETTER">US Letter Layout (612 × 792 pt)</option>
+                                <option value="A4">Standard A4 Canvas (595 × 842 pt)</option>
+                                <option value="LETTER">US Letter Canvas (612 × 792 pt)</option>
                             </select>
                         </div>
                         <div class="flex flex-col">
-                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1">Grid Zoom</label>
+                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1">Workspace Zoom</label>
                             <div class="bg-gray-100 p-1 rounded-lg flex items-center space-x-1 border border-gray-200 h-8">
                                 <button onclick="adjustWorkspaceZoom(-10)" class="px-2 text-xs font-black text-gray-600 hover:bg-white rounded">-</button>
                                 <span id="zoom-value" class="text-xs font-mono px-2 text-gray-700 font-bold">100%</span>
@@ -88,34 +88,34 @@ def home():
                             </div>
                         </div>
                     </div>
-                    <button onclick="document.getElementById('merge-files').click()" class="bg-gray-100 text-gray-700 text-xs font-bold py-2 px-4 rounded-lg border border-gray-300 transition">+ Add Files</button>
+                    <button onclick="document.getElementById('merge-files').click()" class="bg-gray-100 text-gray-700 text-xs font-bold py-2 px-4 rounded-lg border border-gray-300 transition">+ Add Extra Files</button>
                 </div>
                 <div id="pages-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-4 bg-gray-50 rounded-xl min-h-[200px]"></div>
                 <div class="mt-8 pt-4 border-t border-gray-200 flex justify-end">
-                    <button onclick="submitPageSetupMerge()" id="merge-submit-btn" class="bg-[#e5322b] hover:bg-red-700 text-white font-black py-4 px-12 rounded-xl shadow-lg transition text-md uppercase">Compile & Merge PDF</button>
+                    <button onclick="submitPageSetupMerge()" id="merge-submit-btn" class="bg-[#e5322b] hover:bg-red-700 text-white font-black py-4 px-12 rounded-xl shadow-lg text-md uppercase">Compile & Merge PDF</button>
                 </div>
             </div>
         </div>
         ''' + self_contained_javascript_logic()
         return render_layout("Merge PDF Workspace", merge_html)
 
-    # --- 2. SPLIT PDF WORKSPACE (ZIP EXPORT ARCHIVE) ---
+    # --- 2. VISUAL SPLIT PDF WORKSPACE (DYNAMIC SEPARATE PAGES INSIDE COMPRESSED ZIP) ---
     if selected_tool == 'split':
         split_html = '''
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-6">
-                <h1 class="text-3xl font-black text-gray-900 mb-1">Visual Split Studio (ZIP Archive Export)</h1>
-                <p class="text-gray-500 text-sm">Explode pages visually, zoom elements, delete unwanted frames, and compress cleanly into a downloadable ZIP archive.</p>
+                <h1 class="text-3xl font-black text-gray-900 mb-1">Visual Split & Page Extractor</h1>
+                <p class="text-gray-500 text-sm">Explode pages visually, inspect layouts at full size, rearrange orders, and download individual pages packed inside a ZIP folder.</p>
             </div>
             <div id="upload-stage" class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center max-w-xl mx-auto">
                 <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-12 bg-gray-50 transition cursor-pointer" onclick="document.getElementById('split-file').click()">
                     <input type="file" id="split-file" accept=".pdf" class="hidden" onchange="loadPDFToSplitWorkspace(this.files[0])">
-                    <p class="text-base font-bold text-gray-700">Select PDF File to Extract</p>
+                    <p class="text-base font-bold text-gray-700">Select PDF File to Split</p>
                 </div>
             </div>
             <div id="workspace-stage" class="hidden bg-white p-6 rounded-2xl shadow-md border border-gray-200">
                 <div class="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Visual Page Array Extraction Manager</span>
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Page Extractor Workspace</span>
                     <span id="page-count-display" class="text-xs font-mono font-bold bg-red-50 text-[#e5322b] px-2 py-1 rounded">0 Pages Loaded</span>
                 </div>
                 <div id="pages-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-4 bg-gray-50 rounded-xl min-h-[200px]"></div>
@@ -129,7 +129,7 @@ def home():
         ''' + self_contained_javascript_logic()
         return render_layout("Split PDF Workspace", split_html)
 
-    # --- 3. DYNAMIC UPLOAD FOR CONVERSION ASSETS ---
+    # --- 3. STANDARD FORM UPLOADER FOR OTHER MODULE UTILITIES ---
     if selected_tool:
         tool_titles = {'compress': 'Compress PDF Engine', 'pdf2word': 'PDF to Word Converter', 'img2pdf': 'Image to PDF Converter', 'repair': 'PDF Structural Repair Tool', 'resize': 'Image Resolution Sizer', 'enhance': 'Image Contrast Enhancer'}
         title = tool_titles.get(selected_tool, "Converter Processing Module")
@@ -137,7 +137,7 @@ def home():
         upload_html = f'''
         <div class="max-w-xl mx-auto bg-white p-10 rounded-2xl shadow-md border border-gray-200 text-center mt-6">
             <h1 class="text-2xl font-black text-gray-900 mb-2">{title}</h1>
-            <form method="POST" action="/process-file" enctype="multipart/form-data" onsubmit="document.getElementById('sub-btn').disabled=true; document.getElementById('sub-btn').textContent='PROCESSING AUTOMATION...';">
+            <form method="POST" action="/process-file" enctype="multipart/form-data" onsubmit="document.getElementById('sub-btn').disabled=true; document.getElementById('sub-btn').textContent='CONVERTING...';">
                 <input type="hidden" name="operation" value="{selected_tool}">
                 <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-10 bg-gray-50 mb-6 relative">
                     <input type="file" name="file" accept="{accept_types}" required class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" onchange="document.getElementById('fn-dsp').textContent = this.files[0].name">
@@ -149,7 +149,7 @@ def home():
         '''
         return render_layout(title, upload_html)
 
-    # --- 4. MASTER SELECTION CARDS DASHBOARD GRID ---
+    # --- 4. MASTER RED AND WHITE iLOVEPDF THEME CARDS HOMEPAGE ---
     grid_html = '''
     <div class="text-center my-8">
         <h1 class="text-4xl font-black text-gray-900 tracking-tight sm:text-5xl">Every tool you need to work with PDFs</h1>
@@ -159,17 +159,17 @@ def home():
         <a href="/?tool=merge" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div>
             <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Merge PDF Workspace</h3>
-            <p class="text-gray-500 text-xs leading-relaxed">Combine multiple PDFs, manage global zoom scales, and keep landscape view dimensions safely.</p>
+            <p class="text-gray-500 text-xs leading-relaxed">Combine multiple PDFs, manage canvas aspect sizes, and preserve unrotated font rows cleanly.</p>
         </a>
         <a href="/?tool=split" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></div>
-            <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Split PDF (ZIP out)</h3>
-            <p class="text-gray-500 text-xs leading-relaxed">Explode a PDF visually, view elements in close-up panels, remove pages, and compress to ZIP.</p>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Split PDF (ZIP folder out)</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Visually extract separate page items, review close-up canvases, and export to compressed ZIP.</p>
         </a>
         <a href="/?tool=compress" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg></div>
-            <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Compress PDF Suite</h3>
-            <p class="text-gray-500 text-xs leading-relaxed">Advanced stream-content quantization reduction to scale file weights down safely.</p>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Compress PDF Engine</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Deep deflation compression matrix utilities to reliably reduce heavy file sizes down.</p>
         </a>
         <a href="/?tool=pdf2word" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-blue-600 mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg></div>
@@ -180,14 +180,14 @@ def home():
     '''
     return render_layout("All PDF Tools", grid_html)
 
-# --- RESILIENT FRONTEND INTERACTION JAVASCRIPT SYSTEM ENGINE MODULE ---
+# --- BACKEND ENDPOINT ACTIONS SYSTEM ROUTERS ---
 def self_contained_javascript_logic():
     return '''
     <div id="inspector-modal" class="hidden fixed inset-0 bg-black/80 z-50 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col justify-between shadow-2xl relative">
             <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-2xl">
-                <h3 id="inspector-title" class="text-sm font-bold text-gray-700 truncate max-w-md">Document Inspector Viewport</h3>
-                <button onclick="document.getElementById('inspector-modal').classList.add('hidden')" class="bg-gray-200 hover:bg-red-600 hover:text-white text-gray-700 font-black px-3 py-1.5 rounded-lg text-xs">✕ Close Size</button>
+                <h3 id="inspector-title" class="text-sm font-bold text-gray-700 truncate max-w-md">Document Full Size Viewport</h3>
+                <button onclick="document.getElementById('inspector-modal').classList.add('hidden')" class="bg-gray-200 hover:bg-red-600 hover:text-white text-gray-700 font-black px-3 py-1.5 rounded-lg text-xs">✕ Close Full Size</button>
             </div>
             <div class="flex-grow p-4 overflow-auto bg-gray-100 flex items-center justify-center">
                 <canvas id="inspector-canvas" class="max-w-full max-h-full shadow-md rounded bg-white object-contain"></canvas>
@@ -208,11 +208,11 @@ def self_contained_javascript_logic():
             const modal = document.getElementById('inspector-modal');
             const canvas = document.getElementById('inspector-canvas');
             modal.classList.remove('hidden');
-            document.getElementById('inspector-title').textContent = `Magnifying Closely: Page ${pageNum}`;
+            document.getElementById('inspector-title').textContent = `Full Page Inspector - Page ${pageNum}`;
             let pdfDoc = loadedDocsMap[fileKey];
             if (pdfDoc) {
                 pdfDoc.getPage(pageNum).then(page => {
-                    let ctx = canvas.getContext('2d'); let viewport = page.getViewport({ scale: 1.4 });
+                    let ctx = canvas.getContext('2d'); let viewport = page.getViewport({ scale: 1.5 });
                     canvas.height = viewport.height; canvas.width = viewport.width;
                     page.render({ canvasContext: ctx, viewport: viewport });
                 });
@@ -242,7 +242,7 @@ def self_contained_javascript_logic():
                         let pageId = "item-" + fileIdx + "-" + (pageNum - 1);
                         let page = await pdf.getPage(pageNum); let nativeViewport = page.getViewport({ scale: 1.0 });
                         
-                        // NATIVE ORIENTATION AUTO-DETECTION MATRIX MAPPING
+                        // AUTO-DETECT LANDSCAPE PACKETS: Displays horizontally from start if original width is wider
                         let initialLayout = (nativeViewport.width > nativeViewport.height) ? "landscape" : "portrait";
                         globalPageMatrix.push({ fileIdx: fileIdx, pageIdx: pageNum - 1, layout: initialLayout });
 
@@ -264,7 +264,7 @@ def self_contained_javascript_logic():
                         controlRow.innerHTML = `
                             <div class="flex justify-between items-center text-gray-500"><span class="font-bold index-lbl">#${grid.children.length + 1}</span><span class="truncate max-w-[80px] text-[10px] bg-gray-100 px-1 rounded">${file.name}</span><button type="button" onclick="this.parentElement.parentElement.parentElement.remove(); rebuildMatrixSequence();" class="text-gray-400 hover:text-red-600 font-bold">X</button></div>
                             <div class="flex items-center justify-between gap-1">
-                                <label class="text-[9px] text-gray-400 font-mono uppercase">Page Layout:</label>
+                                <label class="text-[9px] text-gray-400 font-mono uppercase">Setup:</label>
                                 <select onchange="toggleCardLayoutSetup('${pageId}', this.value)" class="bg-gray-50 border border-gray-200 rounded px-1 text-[11px] font-bold text-gray-700">
                                     <option value="portrait" ${initialLayout === "portrait" ? "selected" : ""}>Portrait</option>
                                     <option value="landscape" ${initialLayout === "landscape" ? "selected" : ""}>Landscape</option>
@@ -307,7 +307,7 @@ def self_contained_javascript_logic():
                     let canvas = document.createElement('canvas'); canvas.className = "w-full h-full object-contain pointer-events-none";
                     canvasBox.appendChild(canvas); card.appendChild(canvasBox);
                     let metaRow = document.createElement('div'); metaRow.className = "flex justify-between items-center text-xs text-gray-500 pt-1 border-t border-gray-100 z-20 relative";
-                    metaRow.innerHTML = `<span class="font-bold index-lbl">#${grid.children.length + 1}</span><span class="text-[10px] font-mono text-gray-400">Orig Page ${pageNum}</span><button type="button" onclick="this.parentElement.parentElement.remove(); rebuildMatrixSequence();" class="text-gray-400 hover:text-red-600 font-bold">Remove</button>`;
+                    metaRow.innerHTML = `<span class="font-bold index-lbl">#${grid.children.length + 1}</span><span class="text-[10px] font-mono text-gray-400">Page ${pageNum}</span><button type="button" onclick="this.parentElement.parentElement.remove(); rebuildMatrixSequence();" class="text-gray-400 hover:text-red-600 font-bold">Remove</button>`;
                     card.appendChild(metaRow); grid.appendChild(card);
                     let context = canvas.getContext('2d'); let thumbViewport = page.getViewport({ scale: 0.25 });
                     canvas.height = thumbViewport.height; canvas.width = thumbViewport.width; page.render({ canvasContext: context, viewport: thumbViewport });
@@ -351,13 +351,13 @@ def self_contained_javascript_logic():
             formData.append('global_size_setup', document.getElementById('global-size-setup').value);
             formData.append('layout_plan', JSON.stringify(globalPageMatrix.map(item => ({ fileId: "file_" + item.fileIdx, pageIdx: item.pageIdx, layout: item.layout }))));
             fetch('/execute-advanced-merge', { method: 'POST', body: formData }).then(res => res.blob()).then(blob => {
-                let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "pro_scaled_merged_document.pdf"; a.click(); window.location.reload();
+                let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "merged_output_document.pdf"; a.click(); window.location.reload();
             });
         }
 
         function submitVisualSplit() {
             if(globalPageMatrix.length === 0) return;
-            const btn = document.getElementById('split-submit-btn'); btn.disabled = true; btn.innerHTML = 'PACKAGING SEPARATE PAGES...';
+            const btn = document.getElementById('split-submit-btn'); btn.disabled = true; btn.innerHTML = 'PACKAGING ZIP ARCHIVE...';
             let formData = new FormData(); formData.append("file", targetSplitFile);
             formData.append('split_plan', JSON.stringify(globalPageMatrix.map(item => item.pageIdx)));
             fetch('/execute-visual-split', { method: 'POST', body: formData }).then(res => res.blob()).then(blob => {
