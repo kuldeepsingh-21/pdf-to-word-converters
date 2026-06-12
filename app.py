@@ -1,6 +1,5 @@
 import os
 from flask import Flask, request, send_file
-# Imports read directly from your main folder files
 import pdf_tools
 import image_tools
 import converter_tools
@@ -8,7 +7,6 @@ import converter_tools
 app = Flask(__name__)
 UPLOAD_FOLDER = '/tmp'
 
-# --- THE REAL BRANDED iLOVEPDF STYLE LAYOUT ---
 def render_layout(title, content):
     return f'''
     <!doctype html>
@@ -20,13 +18,11 @@ def render_layout(title, content):
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
     <body class="bg-[#f2f3f8] text-[#333333] font-sans min-h-screen flex flex-col justify-between">
-        
         <header class="bg-white border-b border-gray-200 py-3.5 px-6 flex justify-between items-center shadow-sm sticky top-0 z-50">
             <div class="flex items-center space-x-8">
                 <a href="/" class="text-2xl font-black text-[#e5322b] tracking-tight flex items-center">
                     Free PDF<span class="text-[#333333] font-bold">Convert</span>
                 </a>
-                
                 <nav class="hidden lg:flex space-x-6 text-sm font-bold text-gray-700 uppercase tracking-wide">
                     <a href="/?tool=compress" class="hover:text-[#e5322b] transition">Merge PDF</a>
                     <a href="/?tool=repair" class="hover:text-[#e5322b] transition">Split PDF</a>
@@ -35,17 +31,14 @@ def render_layout(title, content):
                     <a href="/" class="text-[#e5322b] border-b-2 border-[#e5322b] pb-1">All PDF Tools</a>
                 </nav>
             </div>
-            
             <div class="flex space-x-4 text-sm font-medium text-gray-600">
                 <a href="/about" class="hover:text-[#e5322b] hidden sm:inline">About Us</a>
                 <a href="/contact" class="hover:text-[#e5322b]">Contact</a>
             </div>
         </header>
-
         <main class="flex-grow w-full max-w-7xl mx-auto px-4 py-10">
             {content}
         </main>
-
         <footer class="bg-[#161616] text-gray-400 text-center py-8 text-xs border-t border-gray-800">
             <div class="flex flex-wrap justify-center space-x-6 mb-4 text-sm font-medium">
                 <a href="/about" class="hover:text-white transition">About Us</a>
@@ -72,17 +65,14 @@ def home():
             'resize': 'Resize & Compress Images',
             'enhance': 'Enhance Photo Contrast'
         }
-        
         title = tool_titles.get(selected_tool, "Document Processing Tool")
         
         upload_html = f'''
         <div class="max-w-xl mx-auto bg-white p-10 rounded-2xl shadow-xl border border-gray-200 text-center mt-6">
             <h1 class="text-3xl font-black text-gray-900 mb-2">{title}</h1>
             <p class="text-gray-500 text-sm mb-8">Upload your file below to process it safely.</p>
-            
             <form method="POST" action="/process-file" enctype="multipart/form-data" onsubmit="showLoading(this)">
                 <input type="hidden" name="operation" value="{selected_tool}">
-                
                 <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-10 bg-gray-50 hover:bg-red-50/20 transition cursor-pointer relative mb-6">
                     <input type="file" name="file" required class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" onchange="document.getElementById('file-name-display').textContent = 'Selected File: ' + this.files[0].name">
                     <div class="text-[#e5322b] mb-3 flex justify-center">
@@ -90,7 +80,6 @@ def home():
                     </div>
                     <p id="file-name-display" class="text-base font-bold text-gray-700">Select file or drag and drop here</p>
                 </div>
-
                 <button type="submit" class="w-full bg-[#e5322b] hover:bg-red-700 text-white font-extrabold py-4 px-6 rounded-xl transition shadow-lg text-lg uppercase tracking-wider">
                     Upload & Convert
                 </button>
@@ -99,14 +88,13 @@ def home():
                 <a href="/" class="text-sm font-bold text-gray-500 hover:text-[#e5322b]">&larr; Back to All PDF Tools</a>
             </div>
         </div>
-
         <script>
-            function showLoading(form) {
+            function showLoading(form) {{
                 const btn = form.querySelector('button[type="submit"]');
                 btn.disabled = true;
                 btn.innerHTML = 'PROCESSING FILE... PLEASE WAIT';
                 btn.className = "w-full bg-gray-400 text-white font-extrabold py-4 px-6 rounded-xl cursor-not-allowed text-lg uppercase tracking-wider animate-pulse";
-            }
+            }}
         </script>
         '''
         return render_layout(title, upload_html)
@@ -116,9 +104,7 @@ def home():
         <h1 class="text-4xl font-black text-[#1f2430] tracking-tight sm:text-5xl">Every tool you need to work with PDFs</h1>
         <p class="mt-3 text-lg text-gray-600 max-w-2xl mx-auto">Every file conversion utility is 100% free and easy to use!</p>
     </div>
-
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-        
         <a href="/?tool=compress" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
@@ -126,7 +112,6 @@ def home():
             <h3 class="text-xl font-black text-gray-900 group-hover:text-[#e5322b] mb-1">Merge PDF</h3>
             <p class="text-gray-500 text-sm leading-relaxed">Combine PDF files in the order you want with the easiest PDF merger available.</p>
         </a>
-
         <a href="/?tool=repair" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -134,7 +119,6 @@ def home():
             <h3 class="text-xl font-black text-gray-900 group-hover:text-[#e5322b] mb-1">Split PDF</h3>
             <p class="text-gray-500 text-sm leading-relaxed">Extract one or multiple pages from your PDF template cleanly.</p>
         </a>
-
         <a href="/?tool=compress" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
@@ -142,7 +126,6 @@ def home():
             <h3 class="text-xl font-black text-gray-900 group-hover:text-[#e5322b] mb-1">Compress PDF</h3>
             <p class="text-gray-500 text-sm leading-relaxed">Reduce file size while optimizing for maximal PDF layout structure.</p>
         </a>
-
         <a href="/?tool=pdf2word" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-blue-600 mb-3">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
@@ -150,7 +133,6 @@ def home():
             <h3 class="text-xl font-black text-gray-900 group-hover:text-blue-600 mb-1">PDF to Word</h3>
             <p class="text-gray-500 text-sm leading-relaxed">Convert your structural PDF files directly into fully editable Microsoft Word documents.</p>
         </a>
-
         <a href="/?tool=img2pdf" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-emerald-600 mb-3">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -158,7 +140,6 @@ def home():
             <h3 class="text-xl font-black text-gray-900 group-hover:text-emerald-600 mb-1">Image to PDF</h3>
             <p class="text-gray-500 text-sm leading-relaxed">Pack your JPG or PNG graphics smoothly down into uniform portable PDF documents.</p>
         </a>
-
         <a href="/?tool=repair" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-amber-600 mb-3">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.36 1.252.588 1.81l-3.97 2.885a1 1 0 00-.364 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.971-2.885a1 1 0 00-1.18 0l-3.97 2.885c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118l-3.97-2.885c-.772-.558-.372-1.81.588-1.81h4.906a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
@@ -166,7 +147,6 @@ def home():
             <h3 class="text-xl font-black text-gray-900 group-hover:text-amber-600 mb-1">Repair PDF</h3>
             <p class="text-gray-500 text-sm leading-relaxed">Recover data blocks from corrupt, broken, or unreadable PDF file structures.</p>
         </a>
-
         <a href="/?tool=resize" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-purple-600 mb-3">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"></path></svg>
@@ -174,7 +154,6 @@ def home():
             <h3 class="text-xl font-black text-gray-900 group-hover:text-purple-600 mb-1">Resize & Compress Image</h3>
             <p class="text-gray-500 text-sm leading-relaxed">Shrink image pixel layouts down by 50% to save storage space.</p>
         </a>
-
         <a href="/?tool=enhance" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-fuchsia-600 mb-3">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
@@ -182,7 +161,6 @@ def home():
             <h3 class="text-xl font-black text-gray-900 group-hover:text-fuchsia-600 mb-1">Enhance Photo Matrix</h3>
             <p class="text-gray-500 text-sm leading-relaxed">Amplify color contrast depths to clean up muddy photos.</p>
         </a>
-
     </div>
     '''
     return render_layout("Universal Hub", grid_html)
@@ -191,13 +169,10 @@ def home():
 def process_file():
     operation = request.form.get('operation')
     file = request.files.get('file')
-    
     if not file or file.filename == '':
         return "No file element provided", 400
-        
     in_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(in_path)
-    
     try:
         if operation == 'pdf2word':
             out_path = os.path.join(UPLOAD_FOLDER, file.filename.replace('.pdf', '.docx'))
@@ -219,9 +194,7 @@ def process_file():
             image_tools.enhance_image(in_path, out_path)
         else:
             return "Unknown operation directive", 400
-            
         return send_file(out_path, as_attachment=True)
-        
     except Exception as e:
         return f"Pipeline execution failure: {str(e)}", 500
     finally:
