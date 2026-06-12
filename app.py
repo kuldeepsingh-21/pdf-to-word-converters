@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, render_template_string
 import pdf_tools
 import image_tools
 import converter_tools
@@ -15,25 +15,28 @@ def render_layout(title, content):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{title} - Free PDF Convert Pro</title>
+        <title>{title} - Free PDF Convert</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     </head>
-    <body class="bg-[#0f111a] text-[#e1e4ea] font-sans min-h-screen flex flex-col justify-between">
+    <body class="bg-[#f2f3f8] text-[#333333] font-sans min-h-screen flex flex-col justify-between">
         
-        <header class="bg-[#161925] border-b border-gray-800 py-3.5 px-6 flex justify-between items-center shadow-md sticky top-0 z-50">
+        <header class="bg-white border-b border-gray-200 py-3.5 px-6 flex justify-between items-center shadow-sm sticky top-0 z-50">
             <div class="flex items-center space-x-8">
-                <a href="/" class="text-2xl font-black text-[#ff3e3e] tracking-tight flex items-center">
-                    Free PDF<span class="text-white font-bold ml-1">Convert</span>
+                <a href="/" class="text-2xl font-black text-[#e5322b] tracking-tight flex items-center">
+                    Free PDF<span class="text-[#333333] font-bold">Convert</span>
                 </a>
-                <nav class="hidden lg:flex space-x-6 text-sm font-bold text-gray-400 uppercase tracking-wide">
-                    <a href="/?tool=merge" class="text-[#ff3e3e] border-b-2 border-[#ff3e3e] pb-1">Merge PDF Workspace</a>
-                    <a href="/?tool=pdf2word" class="hover:text-[#ff3e3e] transition">Convert PDF</a>
-                    <a href="/?tool=compress" class="hover:text-[#ff3e3e] transition">Compress Size</a>
+                <nav class="hidden lg:flex space-x-6 text-sm font-bold text-gray-700 uppercase tracking-wide">
+                    <a href="/?tool=merge" class="hover:text-[#e5322b] transition">Merge PDF</a>
+                    <a href="/?tool=split" class="hover:text-[#e5322b] transition">Split PDF</a>
+                    <a href="/?tool=compress" class="hover:text-[#e5322b] transition">Compress PDF</a>
+                    <a href="/?tool=pdf2word" class="hover:text-[#e5322b] transition">Convert PDF</a>
+                    <a href="/" class="text-[#e5322b] border-b-2 border-[#e5322b] pb-1">All PDF Tools</a>
                 </nav>
             </div>
-            <div class="text-xs font-mono text-gray-500 bg-black/40 px-3 py-1.5 rounded-full border border-gray-800">
-                CORE V3.0 • ENGINE ONLINE
+            <div class="flex space-x-4 text-sm font-medium text-gray-600">
+                <a href="/about" class="hover:text-[#e5322b]">About Us</a>
+                <a href="/contact" class="hover:text-[#e5322b]">Contact</a>
             </div>
         </header>
 
@@ -41,8 +44,14 @@ def render_layout(title, content):
             {content}
         </main>
 
-        <footer class="bg-[#090a10] text-gray-600 text-center py-6 text-xs border-t border-gray-900">
-            <p>&copy; 2026 Free PDF Convert Pro. Local execution parameters sandbox enforced.</p>
+        <footer class="bg-[#161616] text-gray-400 text-center py-8 text-xs border-t border-gray-800">
+            <div class="flex flex-wrap justify-center space-x-6 mb-4 text-sm font-medium">
+                <a href="/about" class="hover:text-white transition">About Us</a>
+                <a href="/privacy" class="hover:text-white transition">Privacy Policy</a>
+                <a href="/terms" class="hover:text-white transition">Terms & Conditions</a>
+                <a href="/contact" class="hover:text-white transition">Contact Us</a>
+            </div>
+            <p class="text-gray-500">&copy; 2026 Free PDF Convert. Every tool you need to work with PDFs.</p>
         </footer>
     </body>
     </html>
@@ -52,47 +61,34 @@ def render_layout(title, content):
 def home():
     selected_tool = request.args.get('tool')
 
+    # --- 1. ADVANCED MULTI-FILE VISUAL MERGER INTERFACE ---
     if selected_tool == 'merge':
         merge_html = '''
-        <div class="max-w-6xl mx-auto mt-4">
-            <div class="text-center mb-10">
-                <h1 class="text-4xl font-black text-white tracking-tight mb-2">High-Tech Merge & Page Organizer</h1>
-                <p class="text-gray-400 text-sm max-w-xl mx-auto">Upload files directly from your desktop or pull them down from your Google Drive infrastructure to interactively arrange specific page sequences.</p>
+        <div class="max-w-5xl mx-auto mt-4">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-black text-gray-900 mb-2">Merge PDF Files</h1>
+                <p class="text-gray-500 text-sm">Select multiple PDFs, visually view real pages, drag to rearrange, and merge.</p>
             </div>
 
-            <div id="upload-stage" class="bg-[#161925] p-12 rounded-2xl shadow-2xl border border-gray-800 text-center max-w-2xl mx-auto">
-                <div class="border-2 border-dashed border-gray-700 hover:border-[#ff3e3e] rounded-xl p-12 bg-[#0f111a] transition cursor-pointer relative mb-6" onclick="document.getElementById('merge-files').click()">
-                    <input type="file" id="merge-files" multiple accept=".pdf" class="hidden" onchange="loadPDFsToCanvasWorkspace(this.files)">
-                    <div class="text-[#ff3e3e] mb-4 flex justify-center">
-                        <svg class="w-16 h-16 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
+            <div id="upload-stage" class="bg-white p-10 rounded-2xl shadow-md border border-gray-200 text-center max-w-xl mx-auto">
+                <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-12 bg-gray-50 transition cursor-pointer relative" onclick="document.getElementById('merge-files').click()">
+                    <input type="file" id="merge-files" multiple accept=".pdf" class="hidden" onchange="loadPDFsToWorkspace(this.files)">
+                    <div class="text-[#e5322b] mb-3 flex justify-center">
+                        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"></path></svg>
                     </div>
-                    <p class="text-xl font-bold text-gray-200">Select Multiple PDF Files From Desktop</p>
-                    <p class="text-xs text-gray-500 mt-2">Supports multi-selection file parameters via native explorer</p>
+                    <p class="text-lg font-bold text-gray-700">Select Multiple PDF Files</p>
                 </div>
-
-                <div class="relative flex py-2 items-center text-gray-600 text-xs font-mono uppercase tracking-widest my-4">
-                    <div class="flex-grow border-t border-gray-800"></div>
-                    <span class="mx-4">Cloud API Node Access</span>
-                    <div class="flex-grow border-t border-gray-800"></div>
-                </div>
-
-                <button type="button" onclick="launchGoogleDrivePickerBridge()" class="w-full bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white font-bold py-3.5 px-6 rounded-xl transition shadow-lg flex items-center justify-center space-x-3 text-sm">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z"/></svg>
-                    <span>Import Documents via Google Drive</span>
-                </button>
             </div>
 
-            <div id="workspace-stage" class="hidden bg-[#161925] p-8 rounded-2xl shadow-2xl border border-gray-800">
-                <div class="flex justify-between items-center border-b border-gray-800 pb-4 mb-6">
-                    <span class="text-xs font-mono tracking-wider text-gray-400 uppercase">Live Pipeline Visualizer: Drag & Drop to Sort Page Frames</span>
-                    <button onclick="document.getElementById('merge-files').click()" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold py-2 px-4 rounded-lg border border-gray-700 transition">+ Add Files</button>
+            <div id="workspace-stage" class="hidden bg-white p-8 rounded-2xl shadow-md border border-gray-200">
+                <div class="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
+                    <span class="text-sm font-bold text-gray-500 uppercase tracking-wider">Drag & Drop Pages to Arrange Order</span>
+                    <button onclick="document.getElementById('merge-files').click()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 px-4 rounded-lg transition">+ Add More Files</button>
                 </div>
-
-                <div id="pages-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 p-6 bg-[#0f111a] rounded-xl min-h-[250px] border border-gray-900"></div>
-
-                <div class="mt-10 pt-6 border-t border-gray-800 flex justify-end">
-                    <button onclick="submitAdvancedMerge()" id="merge-submit-btn" class="bg-gradient-to-r from-[#ff3e3e] to-red-700 hover:from-[#ff5555] hover:to-red-600 text-white font-black py-4 px-12 rounded-xl shadow-lg transition text-lg uppercase tracking-wide">
-                        Compile & Download PDF
+                <div id="pages-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 p-4 bg-gray-50 rounded-xl min-h-[200px]"></div>
+                <div class="mt-8 pt-6 border-t border-gray-200 flex justify-end">
+                    <button onclick="submitAdvancedMerge()" id="merge-submit-btn" class="bg-[#e5322b] hover:bg-red-700 text-white font-black py-4 px-10 rounded-xl shadow-lg transition text-lg uppercase tracking-wide">
+                        Merge PDF Order
                     </button>
                 </div>
             </div>
@@ -100,22 +96,13 @@ def home():
 
         <script>
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-
             let filesStorage = [];
             let globalPageMatrix = [];
 
-            // 1. Google Drive Integration Simulation Setup API Node
-            function launchGoogleDrivePickerBridge() {
-                alert("Google Drive API Access Layer Hook: To make cloud picker work natively in production environments, implement the Google Picker API inside your Google Developers Console dashboard, retrieve your ClientID token, and swap this alert action with a Google auth login framework window.");
-            }
-
-            // 2. High Tech Page Render Logic: Extracts actual previews out of document data packets
-            async function loadPDFsToCanvasWorkspace(files) {
+            async function loadPDFsToWorkspace(files) {
                 if (!files.length) return;
-                
                 document.getElementById('upload-stage').classList.add('hidden');
                 document.getElementById('workspace-stage').classList.remove('hidden');
-                
                 const grid = document.getElementById('pages-grid');
 
                 for(let i=0; i<files.length; i++) {
@@ -123,76 +110,60 @@ def home():
                     filesStorage.push(file);
                     let fileIdx = filesStorage.length - 1;
 
-                    // Convert standard file data structure streams into standard arrays readable by pdf.js
                     let fileReader = new FileReader();
                     fileReader.onload = async function() {
                         let typedarray = new Uint8Array(this.result);
                         let pdf = await pdfjsLib.getDocument(typedarray).promise;
 
-                        // Loop through all genuine pages inside this file element container
                         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                            let pageId = `item-${fileIdx}-${pageNum-1}`;
+                            let pageId = "item-" + fileIdx + "-" + (pageNum - 1);
                             globalPageMatrix.push({ fileIdx: fileIdx, pageIdx: pageNum - 1 });
 
-                            // Create UI card block structure elements
                             let card = document.createElement('div');
                             card.id = pageId;
-                            card.className = "bg-[#1c1f2f] border border-gray-800 p-3 rounded-xl shadow-md cursor-move relative select-none hover:border-[#ff3e3e] group transition flex flex-col justify-between";
+                            card.className = "bg-white border-2 border-gray-200 p-3 rounded-xl shadow-sm cursor-move relative select-none hover:border-[#e5322b] transition flex flex-col justify-between";
                             card.draggable = true;
                             
-                            // Initialize standard element canvas targets to catch rendered bitmap frame imagery
                             let canvas = document.createElement('canvas');
-                            canvas.className = "w-full rounded bg-black/40 border border-gray-900 shadow-inner mb-2 aspect-[3/4]";
-                            
+                            canvas.className = "w-full rounded bg-gray-100 border border-gray-200 aspect-[3/4]";
                             card.appendChild(canvas);
 
-                            // Bottom meta text structure row blocks
                             let infoRow = document.createElement('div');
-                            infoRow.className = "flex justify-between items-center text-xs mt-1 text-gray-400";
-                            infoRow.innerHTML = `
-                                <span class="font-mono text-gray-500 font-bold index-marker">#${grid.children.length + 1}</span>
-                                <span class="text-[10px] truncate max-w-[80px] bg-black/30 px-1 py-0.5 rounded text-gray-500">${file.name}</span>
-                                <button type="button" onclick="this.parentElement.parentElement.remove(); rebuildMatrixSequence();" class="text-gray-500 hover:text-red-500 font-bold font-mono">X</button>
-                            `;
+                            infoRow.className = "flex justify-between items-center text-xs mt-2 text-gray-500";
+                            infoRow.innerHTML = '<span class="font-bold index-marker">#' + (grid.children.length + 1) + '</span><span class="truncate max-w-[70px] text-[10px] bg-gray-100 px-1 py-0.5 rounded">' + file.name + '</span><button type="button" onclick="this.parentElement.parentElement.remove(); rebuildMatrixSequence();" class="text-gray-400 hover:text-red-600 font-bold">X</button>';
                             card.appendChild(infoRow);
                             grid.appendChild(card);
 
-                            // Trigger rendering background tasks inside the client layout
-                            renderPageThumbnailsToCanvas(pdf, pageNum, canvas);
+                            renderThumb(pdf, pageNum, canvas);
                             card.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', card.id));
                         }
-                        setupGridDragAndDropDropzones();
+                        setupDragAndDrop();
                     };
                     fileReader.readAsArrayBuffer(file);
                 }
             }
 
-            async function renderPageThumbnailsToCanvas(pdfInstance, pageNum, canvasElement) {
+            async function renderThumb(pdfInstance, pageNum, canvasElement) {
                 let page = await pdfInstance.getPage(pageNum);
-                let viewport = page.getViewport({ scale: 0.3 }); // Downscale viewport size calculation boundaries
+                let viewport = page.getViewport({ scale: 0.2 });
                 let context = canvasElement.getContext('2d');
                 canvasElement.height = viewport.height;
                 canvasElement.width = viewport.width;
-                
-                let renderContext = { canvasContext: context, viewport: viewport };
-                page.render(renderContext);
+                page.render({ canvasContext: context, viewport: viewport });
             }
 
-            function setupGridDragAndDropDropzones() {
+            function setupDragAndDrop() {
                 const grid = document.getElementById('pages-grid');
                 grid.addEventListener('dragover', (e) => e.preventDefault());
-                
                 grid.addEventListener('drop', (e) => {
                     e.preventDefault();
                     const draggedId = e.dataTransfer.getData('text/plain');
                     const draggedElement = document.getElementById(draggedId);
-                    const target = e.target.closest('.bg-white, .bg-\\\\[#1c1f2f\\\\]'); // Catch high tech dynamic utility class selectors safely
-                    
+                    const target = e.target.closest('#pages-grid > div');
                     if (draggedElement && target && draggedElement !== target) {
                         const children = Array.from(grid.children);
                         const draggedPos = children.indexOf(draggedElement);
                         const targetPos = children.indexOf(target);
-                        
                         if (draggedPos < targetPos) {
                             grid.insertBefore(draggedElement, target.nextSibling);
                         } else {
@@ -207,57 +178,132 @@ def home():
                 const grid = document.getElementById('pages-grid');
                 const orderCards = Array.from(grid.children);
                 let newMatrix = [];
-                
                 orderCards.forEach((card, index) => {
-                    card.querySelector('.index-marker').textContent = `#${index + 1}`;
+                    card.querySelector('.index-marker').textContent = '#' + (index + 1);
                     let parts = card.id.split('-');
-                    newMatrix.push({
-                        fileIdx: parseInt(parts[1]),
-                        pageIdx: parseInt(parts[2])
-                    });
+                    newMatrix.push({ fileIdx: parseInt(parts[1]), pageIdx: parseInt(parts[2]) });
                 });
                 globalPageMatrix = newMatrix;
-                if(globalPageMatrix.length === 0) { window.location.reload(); }
+                if(globalPageMatrix.length === 0) window.location.reload();
             }
 
             function submitAdvancedMerge() {
                 if(globalPageMatrix.length === 0) return;
-                
                 const btn = document.getElementById('merge-submit-btn');
                 btn.disabled = true;
-                btn.innerHTML = 'SANDBOX RUNNING MATRIX ALGORITHMS...';
-                btn.className = "bg-gray-800 text-gray-600 font-black py-4 px-12 rounded-xl cursor-not-allowed text-lg uppercase tracking-wide animate-pulse";
+                btn.innerHTML = 'PROCESSING...';
+                btn.className = "bg-gray-400 text-white font-black py-4 px-10 rounded-xl cursor-not-allowed text-lg uppercase tracking-wide animate-pulse";
 
                 let formData = new FormData();
-                filesStorage.forEach((file, index) => {
-                    formData.append(`file_${index}`, file);
-                });
-                
-                let mappingPlan = globalPageMatrix.map(item => {
-                    return { fileId: `file_${item.fileIdx}`, pageIdx: item.pageIdx };
-                });
-                
-                formData.append('layout_plan', JSON.stringify(mappingPlan));
+                filesStorage.forEach((file, index) => { formData.append("file_" + index, file); });
+                formData.append('layout_plan', JSON.stringify(globalPageMatrix.map(item => ({ fileId: "file_" + item.fileIdx, pageIdx: item.pageIdx }))));
 
                 fetch('/execute-advanced-merge', { method: 'POST', body: formData })
-                .then(res => { if(!res.ok) throw new Error('Engine processing fault'); return res.blob(); })
+                .then(res => res.blob())
                 .then(blob => {
                     let url = window.URL.createObjectURL(blob);
                     let a = document.createElement('a');
                     a.href = url;
-                    a.download = "organized_document_assembly.pdf";
+                    a.download = "merged_document.pdf";
                     document.body.appendChild(a);
                     a.click();
                     window.location.reload();
-                })
-                .catch(err => { alert(err.message); window.location.reload(); });
+                });
             }
         </script>
         '''
-        return render_layout("Merge PDF Workspace", merge_html)
+        return render_layout("Merge PDF", merge_html)
 
-    # Fallback to standard app card dashboard panel layout views if merge tool parameter isn't chosen
-    return render_layout("Universal Hub", "<div class='text-center py-20'><a href='/?tool=merge' class='bg-[#ff3e3e] px-8 py-4 font-bold rounded-xl text-white shadow-xl hover:bg-red-600 uppercase text-sm tracking-widest'>Enter Visual Merge Engine Workspace Suite &rarr;</a></div>")
+    # --- 2. REGULAR UPLOAD FOR ALL OTHER SINGLE TOOLS ---
+    if selected_tool:
+        tool_titles = {
+            'split': 'Split PDF', 'compress': 'Compress PDF', 'pdf2word': 'PDF to Word',
+            'img2pdf': 'Image to PDF', 'repair': 'Repair PDF', 'resize': 'Resize Image', 'enhance': 'Enhance Image'
+        }
+        title = tool_titles.get(selected_tool, "Document Tool")
+        accept_types = "image/*" if selected_tool in ['resize', 'enhance', 'img2pdf'] else ".pdf"
+
+        upload_html = f'''
+        <div class="max-w-xl mx-auto bg-white p-10 rounded-2xl shadow-md border border-gray-200 text-center mt-6">
+            <h1 class="text-3xl font-black text-gray-900 mb-2">{title}</h1>
+            <p class="text-gray-500 text-sm mb-8">Upload your file parameters to begin automatic conversion matrix workflows.</p>
+            
+            <form method="POST" action="/process-file" enctype="multipart/form-data" onsubmit="showLoading(this)">
+                <input type="hidden" name="operation" value="{selected_tool}">
+                <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-10 bg-gray-50 hover:bg-red-50/20 transition cursor-pointer relative mb-6">
+                    <input type="file" name="file" accept="{accept_types}" required class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" onchange="document.getElementById('file-name-display').textContent = 'Selected: ' + this.files[0].name">
+                    <div class="text-[#e5322b] mb-3 flex justify-center">
+                        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                    </div>
+                    <p id="file-name-display" class="text-base font-bold text-gray-700">Select file or drag and drop here</p>
+                </div>
+                <button type="submit" id="sub-btn" class="w-full bg-[#e5322b] hover:bg-red-700 text-white font-extrabold py-4 px-6 rounded-xl shadow-lg text-lg uppercase tracking-wider transition">
+                    Upload & Process
+                </button>
+            </form>
+        </div>
+        <script>
+            function showLoading(form) {{
+                const btn = document.getElementById('sub-btn');
+                btn.disabled = true;
+                btn.innerHTML = 'PROCESSING...';
+                btn.className = "w-full bg-gray-400 text-white font-extrabold py-4 px-6 rounded-xl cursor-not-allowed text-lg uppercase tracking-wider animate-pulse";
+            }}
+        </script>
+        '''
+        return render_layout(title, upload_html)
+
+    # --- 3. CLASSIC WHITE MAIN ILOVEPDF GRID LAYOUT ---
+    grid_html = '''
+    <div class="text-center my-8">
+        <h1 class="text-4xl font-black text-gray-900 tracking-tight sm:text-5xl">Every tool you need to work with PDFs</h1>
+        <p class="mt-3 text-lg text-gray-600 max-w-2xl mx-auto">100% free online document conversion tools and image editors.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-12">
+        <a href="/?tool=merge" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
+            <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Merge PDF</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Combine multiple PDFs, adjust page sequences visually and merge.</p>
+        </a>
+        <a href="/?tool=split" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
+            <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></div>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Split PDF</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Extract page scopes down into independent file assets instantly.</p>
+        </a>
+        <a href="/?tool=compress" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
+            <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg></div>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Compress PDF</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Optimize file weight while ensuring maximum text layout output.</p>
+        </a>
+        <a href="/?tool=pdf2word" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
+            <div class="text-blue-600 mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg></div>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-blue-600 mb-1">PDF to Word</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Turn static PDF sheets directly into editable Word .docx files.</p>
+        </a>
+        <a href="/?tool=img2pdf" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
+            <div class="text-emerald-600 mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-emerald-600 mb-1">Image to PDF</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Convert JPG or PNG matrix photos into unified printable PDFs.</p>
+        </a>
+        <a href="/?tool=repair" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
+            <div class="text-amber-600 mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.36 1.252.588 1.81l-3.97 2.885a1 1 0 00-.364 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.971-2.885a1 1 0 00-1.18 0l-3.97 2.885c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118l-3.97-2.885c-.772-.558-.372-1.81.588-1.81h4.906a1 1 0 00.951-.69l1.519-4.674z"></path></svg></div>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-amber-600 mb-1">Repair PDF</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Fix cross-reference cross tables inside corrupted file vectors.</p>
+        </a>
+        <a href="/?tool=resize" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
+            <div class="text-purple-600 mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"></path></svg></div>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-purple-600 mb-1">Resize Image</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Downsample resolution dimensions by 50% to save storage space.</p>
+        </a>
+        <a href="/?tool=enhance" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
+            <div class="text-fuchsia-600 mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></div>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-fuchsia-600 mb-1">Enhance Image</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Amplify picture color matrices to maximize clear contrast mapping.</p>
+        </a>
+    </div>
+    '''
+    return render_layout("All PDF Tools", grid_html)
 
 @app.route('/execute-advanced-merge', methods=['POST'])
 def execute_advanced_merge():
@@ -266,21 +312,63 @@ def execute_advanced_merge():
         page_order_plan = json.loads(plan_data)
         uploaded_files_map = {}
         saved_paths = []
-        
         for key in request.files:
             file = request.files[key]
-            path = os.path.join(UPLOAD_FOLDER, f"merge_tmp_{key}_{file.filename}")
+            path = os.path.join(UPLOAD_FOLDER, f"m_tmp_{key}_{file.filename}")
             file.save(path)
             uploaded_files_map[key] = path
             saved_paths.append(path)
-            
-        out_file = os.path.join(UPLOAD_FOLDER, "final_merged_assembly.pdf")
+        out_file = os.path.join(UPLOAD_FOLDER, "merged_output.pdf")
         pdf_tools.merge_advanced_pdf(uploaded_files_map, page_order_plan, out_file)
         return send_file(out_file, as_attachment=True)
     except Exception as e: return str(e), 500
     finally:
         for p in saved_paths:
             if os.path.exists(p): os.remove(p)
+
+@app.route('/process-file', methods=['POST'])
+def process_file():
+    operation = request.form.get('operation')
+    file = request.files.get('file')
+    if not file or file.filename == '': return "Missing File", 400
+    in_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(in_path)
+    try:
+        if operation == 'pdf2word':
+            out_path = os.path.join(UPLOAD_FOLDER, file.filename.replace('.pdf', '.docx'))
+            converter_tools.pdf_to_word(in_path, out_path)
+        elif operation == 'img2pdf':
+            out_path = os.path.join(UPLOAD_FOLDER, file.filename + ".pdf")
+            converter_tools.img_to_pdf(in_path, out_path)
+        elif operation == 'compress':
+            out_path = os.path.join(UPLOAD_FOLDER, "compressed_" + file.filename)
+            pdf_tools.compress_pdf(in_path, out_path)
+        elif operation == 'split':
+            out_path = os.path.join(UPLOAD_FOLDER, "split_page1_" + file.filename)
+            pdf_tools.split_pdf_first_page(in_path, out_path)
+        elif operation == 'repair':
+            out_path = os.path.join(UPLOAD_FOLDER, "repaired_" + file.filename)
+            pdf_tools.repair_pdf(in_path, out_path)
+        elif operation == 'resize':
+            out_path = os.path.join(UPLOAD_FOLDER, "resized_" + file.filename)
+            image_tools.resize_image(in_path, out_path)
+        elif operation == 'enhance':
+            out_path = os.path.join(UPLOAD_FOLDER, "enhanced_" + file.filename)
+            image_tools.enhance_image(in_path, out_path)
+        else: return "Unknown tool", 400
+        return send_file(out_path, as_attachment=True)
+    except Exception as e: return f"Error: {str(e)}", 500
+    finally:
+        if os.path.exists(in_path): os.remove(in_path)
+
+@app.route('/about')
+def page_about(): return render_layout("About Us", "<div class='bg-white p-8 rounded-xl border border-gray-200 shadow-sm'><h1 class='text-2xl font-black mb-4'>About Us</h1><p class='text-gray-600 leading-relaxed'>Free PDF Convert builds fast open source conversion pipelines.</p></div>")
+@app.route('/privacy')
+def page_privacy(): return render_layout("Privacy", "<div class='bg-white p-8 rounded-xl border border-gray-200 shadow-sm'><h1 class='text-2xl font-black mb-4'>Privacy Policy</h1><p class='text-gray-600 leading-relaxed'>No tracking cookies. Files immediately dump from temporary cache on task finish.</p></div>")
+@app.route('/terms')
+def page_terms(): return render_layout("Terms", "<div class='bg-white p-8 rounded-xl border border-gray-200 shadow-sm'><h1 class='text-2xl font-black mb-4'>Terms & Conditions</h1><p class='text-gray-600 leading-relaxed'>Services run as-is without internal data payload storage liabilities.</p></div>")
+@app.route('/contact')
+def page_contact(): return render_layout("Contact", "<div class='bg-white p-8 rounded-xl border border-gray-200 shadow-sm'><h1 class='text-2xl font-black mb-4'>Contact Us</h1><p class='text-gray-600 leading-relaxed'>Email lines: support@freepdfconvert.com</p></div>")
 
 if __name__ == '__main__':
     app.run(debug=True)
