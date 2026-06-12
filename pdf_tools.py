@@ -8,12 +8,23 @@ def compress_pdf(in_path, out_path):
     for page in writer.pages: page.compress_content_streams()
     with open(out_path, "wb") as f: writer.write(f)
 
-def split_pdf_first_page(in_path, out_path):
+def split_advanced_pdf(in_path, page_indices, out_path):
+    """
+    in_path: path to uploaded target PDF
+    page_indices: list of integers representing selected page orders [0, 3, 2, 5]
+    out_path: path to output directory
+    """
     reader = PdfReader(in_path)
     writer = PdfWriter()
-    if len(reader.pages) > 0: writer.add_page(reader.pages[0])
-    with open(out_path, "wb") as f: writer.write(f)
-
+    
+    # Extract only the retained and arranged page objects securely
+    for idx in page_indices:
+        if 0 <= idx < len(reader.pages):
+            page_obj = reader.pages[idx]
+            writer.add_page(page_obj)
+            
+    with open(out_path, "wb") as f:
+        writer.write(f)
 def repair_pdf(in_path, out_path):
     reader = PdfReader(in_path)
     writer = PdfWriter()
