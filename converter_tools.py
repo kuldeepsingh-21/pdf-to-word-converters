@@ -19,26 +19,21 @@ def img_to_pdf_adjusted(img_path, pdf_path, orientation="portrait", margins="non
     img_converted = img.convert("RGB")
     img_converted.save(pdf_path, "PDF", resolution=100.0, quality=90)
 
-# --- WEB CAPTURE WITH MD5 DEDUPLICATION AND UNIQUE ANCHORS ---
 def html_web_capture_to_pdf(html_text_content, out_pdf_path, convert_to_pdf_a=False):
     c = canvas.Canvas(out_pdf_path, pagesize=letter)
     width, height = letter
     y_position = height - 50
-    
-    # Memory content database tracking
     content_dedup_db = set()
     link_counter = 0
     
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(50, y_position, "Web Capture Document Sheet")
+    c.drawString(50, y_position, "Web Capture Converted Document")
     y_position -= 35
     
     for line in html_text_content.split('\n'):
         if not line.strip(): continue
-        
-        # Calculate unique MD5 hash signature
         line_fingerprint = hashlib.md5(line.encode('utf-8')).hexdigest()
-        if line_fingerprint in content_dedup_db: continue # Deduplicate content
+        if line_fingerprint in content_dedup_db: continue
         content_dedup_db.add(line_fingerprint)
         
         if "href" in line or "http" in line:
