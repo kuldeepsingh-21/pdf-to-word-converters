@@ -1,5 +1,6 @@
 import os
 import json
+import zipfile
 from flask import Flask, request, send_file
 import pdf_tools
 import image_tools
@@ -37,7 +38,7 @@ def render_layout(title, content):
             {content}
         </main>
         <footer class="bg-[#161616] text-gray-400 text-center py-6 text-xs">
-            <p>&copy; 2026 Free PDF Convert. Secure isolated environment enabled.</p>
+            <p>&copy; 2026 Free PDF Convert. Secure sandbox computing pipeline active.</p>
         </footer>
     </body>
     </html>
@@ -52,7 +53,7 @@ def home():
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-6">
                 <h1 class="text-3xl font-black text-gray-900 mb-1">Merge PDF Workspace</h1>
-                <p class="text-gray-500 text-sm">Maintains original layouts without cutting off content or overwriting fields.</p>
+                <p class="text-gray-500 text-sm">Autodetects landscape assets. Standardizes page sizing fields without cutting text entries.</p>
             </div>
             <div id="upload-stage" class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center max-w-xl mx-auto">
                 <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-12 bg-gray-50 transition cursor-pointer" onclick="document.getElementById('merge-files').click()">
@@ -86,7 +87,7 @@ def home():
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-6">
                 <h1 class="text-3xl font-black text-gray-900 mb-1">Split PDF Studio</h1>
-                <p class="text-gray-500 text-sm">Extract ranges, page chunks, or burst pages into a compressed ZIP file.</p>
+                <p class="text-gray-500 text-sm">Burst documents apart, chunk layers, or segment specific targets into structured ZIP downloads.</p>
             </div>
             <div id="upload-stage" class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center max-w-xl mx-auto">
                 <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-12 bg-gray-50 transition cursor-pointer" onclick="document.getElementById('split-file').click()">
@@ -114,7 +115,7 @@ def home():
                     </div>
                 </div>
                 <div class="flex justify-between items-center text-xs font-bold text-gray-400 border-b pb-2 mb-4">
-                    <span>Selected file configuration page breakdown mapping</span>
+                    <span>Manage page scope adjustments interactively</span>
                     <span id="page-count-display" class="bg-red-50 text-[#e5322b] px-2 py-1 rounded">0 Pages</span>
                 </div>
                 <div id="pages-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-4 bg-gray-50 rounded-xl min-h-[180px]"></div>
@@ -150,7 +151,7 @@ def home():
         <div class="max-w-5xl mx-auto mt-4">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-black text-gray-900 mb-1">Universal Convert Studio</h1>
-                <p class="text-gray-500 text-sm">Two-way formatting pipelines supporting structural webpage captures.</p>
+                <p class="text-gray-500 text-sm">Two-way conversion nodes supporting structural HTML webpage captures.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
@@ -197,6 +198,7 @@ def home():
         '''
         return render_layout("Size Metrics Report", success_html)
 
+    # Core Options List
     grid_html = '''
     <div class="text-center my-8">
         <h1 class="text-4xl font-black text-gray-900 tracking-tight sm:text-5xl">Every tool you need to work with PDFs</h1>
@@ -206,7 +208,7 @@ def home():
         <a href="/?tool=merge" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div>
             <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Merge PDF Workspace</h3>
-            <p class="text-gray-500 text-xs leading-relaxed">Combine multiple PDFs, manage canvas size variables, and lock form field alignments safely.</p>
+            <p class="text-gray-500 text-xs leading-relaxed">Combine multiple PDFs, manage canvas size elements, and handle form fields safely.</p>
         </a>
         <a href="/?tool=split" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></div>
@@ -216,7 +218,7 @@ def home():
         <a href="/?tool=compress" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg></div>
             <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Compress PDF Suite</h3>
-            <p class="text-gray-500 text-xs leading-relaxed">Advanced stream-content quantization reduction to scale file weights down safely.</p>
+            <p class="text-gray-500 text-xs leading-relaxed">Reduce file sizes via advanced stream-content quantization filtering algorithms safely.</p>
         </a>
         <a href="/?tool=convert" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg></div>
@@ -233,7 +235,7 @@ def self_contained_javascript_logic():
         <div class="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col justify-between shadow-2xl relative">
             <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-2xl">
                 <h3 id="inspector-title" class="text-sm font-bold text-gray-700 truncate">Document Full Size Viewport</h3>
-                <button onclick="document.getElementById('inspector-modal').classList.add('hidden')" class="bg-gray-200 hover:bg-red-600 hover:text-white text-gray-700 font-black px-3 py-1.5 rounded-lg text-xs">✕ Close Full Size</button>
+                <button onclick="document.getElementById('inspector-modal').classList.add('hidden')" class="bg-gray-200 hover:bg-red-600 hover:text-white font-black px-3 py-1.5 rounded-lg text-xs">✕ Close Full Size</button>
             </div>
             <div class="flex-grow p-4 overflow-auto bg-gray-100 flex items-center justify-center"><canvas id="inspector-canvas" class="max-w-full max-h-full shadow-md rounded bg-white object-contain"></canvas></div>
         </div>
