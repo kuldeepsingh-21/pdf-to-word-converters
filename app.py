@@ -1,6 +1,5 @@
 import os
 import json
-import zipfile
 from flask import Flask, request, send_file
 import pdf_tools
 import image_tools
@@ -8,7 +7,6 @@ import converter_tools
 
 app = Flask(__name__)
 UPLOAD_FOLDER = '/tmp'
-SIZE_LIMIT_BYTES = 100 * 1024 * 1024
 
 def render_layout(title, content):
     return f'''
@@ -35,13 +33,11 @@ def render_layout(title, content):
                 </nav>
             </div>
         </header>
-
         <main class="flex-grow w-full max-w-7xl mx-auto px-4 py-8">
             {content}
         </main>
-
         <footer class="bg-[#161616] text-gray-400 text-center py-6 text-xs">
-            <p>&copy; 2026 Free PDF Convert. local sandboxed privacy matrix initialized.</p>
+            <p>&copy; 2026 Free PDF Convert. Secure isolated environment enabled.</p>
         </footer>
     </body>
     </html>
@@ -51,13 +47,12 @@ def render_layout(title, content):
 def home():
     selected_tool = request.args.get('tool')
 
-    # --- MERGE WORKSPACE ---
     if selected_tool == 'merge':
         merge_html = '''
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-6">
                 <h1 class="text-3xl font-black text-gray-900 mb-1">Merge PDF Workspace</h1>
-                <p class="text-gray-500 text-sm">Autodetects page shapes. Aligns orientations while protecting fillable form fields.</p>
+                <p class="text-gray-500 text-sm">Maintains original layouts without cutting off content or overwriting fields.</p>
             </div>
             <div id="upload-stage" class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center max-w-xl mx-auto">
                 <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-12 bg-gray-50 transition cursor-pointer" onclick="document.getElementById('merge-files').click()">
@@ -75,7 +70,7 @@ def home():
                             <button onclick="adjustWorkspaceZoom(10)" class="px-2 font-black">+</button>
                         </div>
                     </div>
-                    <button onclick="document.getElementById('merge-files').click()" class="bg-gray-100 text-gray-700 text-xs font-bold py-2 px-4 rounded-lg border border-gray-300">+ Add Files</button>
+                    <button onclick="document.getElementById('merge-files').click()" class="bg-gray-100 text-gray-700 text-xs font-bold py-2 px-4 rounded-lg border border-gray-300 transition">+ Add Files</button>
                 </div>
                 <div id="pages-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-4 bg-gray-50 rounded-xl min-h-[200px]"></div>
                 <div class="mt-8 pt-4 border-t border-gray-200 flex justify-end">
@@ -86,13 +81,12 @@ def home():
         ''' + self_contained_javascript_logic()
         return render_layout("Merge PDF", merge_html)
 
-    # --- SPLIT WORKSPACE ---
     if selected_tool == 'split':
         split_html = '''
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-6">
                 <h1 class="text-3xl font-black text-gray-900 mb-1">Split PDF Studio</h1>
-                <p class="text-gray-500 text-sm">Extract ranges, set page chunks, or burst all pages apart into a ZIP archive.</p>
+                <p class="text-gray-500 text-sm">Extract ranges, page chunks, or burst pages into a compressed ZIP file.</p>
             </div>
             <div id="upload-stage" class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center max-w-xl mx-auto">
                 <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-12 bg-gray-50 transition cursor-pointer" onclick="document.getElementById('split-file').click()">
@@ -112,7 +106,7 @@ def home():
                         </select>
                     </div>
                     <div id="parameter-input-box" class="flex flex-col hidden">
-                        <label class="font-bold mb-1 uppercase text-gray-400">Parameters</label>
+                        <label class="font-bold mb-1 uppercase text-gray-400">Parameters / Ranges</label>
                         <input type="text" id="split-parameter-field" placeholder="e.g. 3" class="bg-white border rounded p-2 font-bold">
                     </div>
                     <div class="flex flex-col justify-end">
@@ -120,7 +114,7 @@ def home():
                     </div>
                 </div>
                 <div class="flex justify-between items-center text-xs font-bold text-gray-400 border-b pb-2 mb-4">
-                    <span>Click file pages below to pick targets manually</span>
+                    <span>Selected file configuration page breakdown mapping</span>
                     <span id="page-count-display" class="bg-red-50 text-[#e5322b] px-2 py-1 rounded">0 Pages</span>
                 </div>
                 <div id="pages-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-4 bg-gray-50 rounded-xl min-h-[180px]"></div>
@@ -129,20 +123,19 @@ def home():
         ''' + self_contained_javascript_logic()
         return render_layout("Split PDF Studio", split_html)
 
-    # --- COMPRESS WORKSPACE ---
     if selected_tool == 'compress':
-        compress_html = f'''
+        compress_html = '''
         <div class="max-w-xl mx-auto bg-white p-10 rounded-2xl shadow-md border border-gray-200 mt-6">
             <h1 class="text-2xl font-black text-gray-900 mb-2 text-center">Compress PDF Engine</h1>
             <form method="POST" action="/execute-compression" enctype="multipart/form-data">
                 <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-8 bg-gray-50 mb-6 text-center relative cursor-pointer">
                     <input type="file" name="file" accept=".pdf" required class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" onchange="document.getElementById('fn-dsp').textContent = 'Selected: ' + this.files[0].name">
-                    <p id="fn-dsp" class="text-sm font-bold text-gray-700">Select file parameter target allocation</p>
+                    <p id="fn-dsp" class="text-sm font-bold text-gray-700">Select PDF document to compress</p>
                 </div>
                 <div class="mb-6 text-xs flex flex-col">
                     <label class="font-bold text-gray-400 mb-1 uppercase">Compression Level</label>
                     <select name="level" class="bg-gray-50 border p-2.5 rounded-lg font-bold text-gray-700">
-                        <option value="basic">Basic Compression (150 DPI - Clear Quality Preservation)</option>
+                        <option value="basic">Basic Compression (150 DPI - Quality Preservation)</option>
                         <option value="strong">Strong Compression (72 DPI - Maximum Size Reduction)</option>
                     </select>
                 </div>
@@ -152,7 +145,6 @@ def home():
         '''
         return render_layout("Compress PDF", compress_html)
 
-    # --- CONVERT STUDIO WORKSPACE ---
     if selected_tool == 'convert':
         convert_html = '''
         <div class="max-w-5xl mx-auto mt-4">
@@ -189,7 +181,6 @@ def home():
         '''
         return render_layout("Convert Studio", convert_html)
 
-    # Size Optimization Success Screen
     if request.args.get('orig_size'):
         o, c = int(request.args.get('orig_size')), int(request.args.get('comp_size'))
         savings = round(((o - c) / o) * 100, 1)
@@ -206,7 +197,6 @@ def home():
         '''
         return render_layout("Size Metrics Report", success_html)
 
-    # --- MASTER SUITE SUITE CARDS GRID HOMEPAGE ---
     grid_html = '''
     <div class="text-center my-8">
         <h1 class="text-4xl font-black text-gray-900 tracking-tight sm:text-5xl">Every tool you need to work with PDFs</h1>
@@ -226,7 +216,7 @@ def home():
         <a href="/?tool=compress" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg></div>
             <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Compress PDF Suite</h3>
-            <p class="text-gray-500 text-xs leading-relaxed">Reduce file sizes via advanced stream-content quantization filtering algorithms safely.</p>
+            <p class="text-gray-500 text-xs leading-relaxed">Advanced stream-content quantization reduction to scale file weights down safely.</p>
         </a>
         <a href="/?tool=convert" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
             <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg></div>
@@ -237,14 +227,13 @@ def home():
     '''
     return render_layout("All PDF Tools", grid_html)
 
-# --- BACKEND PIPELINE PROCESS ROUTERS ---
 def self_contained_javascript_logic():
     return '''
     <div id="inspector-modal" class="hidden fixed inset-0 bg-black/80 z-50 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col justify-between shadow-2xl relative">
             <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-2xl">
                 <h3 id="inspector-title" class="text-sm font-bold text-gray-700 truncate">Document Full Size Viewport</h3>
-                <button onclick="document.getElementById('inspector-modal').classList.add('hidden')" class="bg-gray-200 hover:bg-red-600 hover:text-white font-black px-3 py-1.5 rounded-lg text-xs">✕ Close Full Size</button>
+                <button onclick="document.getElementById('inspector-modal').classList.add('hidden')" class="bg-gray-200 hover:bg-red-600 hover:text-white text-gray-700 font-black px-3 py-1.5 rounded-lg text-xs">✕ Close Full Size</button>
             </div>
             <div class="flex-grow p-4 overflow-auto bg-gray-100 flex items-center justify-center"><canvas id="inspector-canvas" class="max-w-full max-h-full shadow-md rounded bg-white object-contain"></canvas></div>
         </div>
@@ -312,7 +301,7 @@ def self_contained_javascript_logic():
             let fileReader = new FileReader(); fileReader.readAsArrayBuffer(file);
             fileReader.onload = async function() {
                 let typedarray = new Uint8Array(this.result); let pdf = await pdfjsLib.getDocument(typedarray).promise; loadedDocsMap["file_0"] = pdf;
-                document.getElementById('page-count-display').textContent = `${pdf.numPages} Pages Loaded`; totalDocumentPages = pdf.numPages;
+                document.getElementById('page-count-display').textContent = `${pdf.numPages} Pages Loaded`;
                 for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                     let pageId = `page-node-${pageNum - 1}`; let page = await pdf.getPage(pageNum); let nativeViewport = page.getViewport({ scale: 1.0 });
                     let pageOrientation = (nativeViewport.width > nativeViewport.height) ? "landscape" : "portrait"; globalPageMatrix.push({ pageIdx: pageNum - 1 });
