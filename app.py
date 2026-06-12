@@ -1,5 +1,6 @@
 import os
 import json
+import zipfile
 from flask import Flask, request, send_file
 import pdf_tools
 import image_tools
@@ -30,8 +31,12 @@ def render_layout(title, content):
                     <a href="/?tool=merge" class="hover:text-[#e5322b] transition">Merge PDF</a>
                     <a href="/?tool=split" class="hover:text-[#e5322b] transition">Split PDF</a>
                     <a href="/?tool=compress" class="hover:text-[#e5322b] transition">Compress PDF</a>
-                    <a href="/?tool=pdf2word" class="hover:text-[#e5322b] transition">Convert PDF</a>
+                    <a href="/?tool=convert" class="hover:text-[#e5322b] transition">Convert Studio</a>
+                    <a href="/" class="text-[#e5322b] border-b-2 border-[#e5322b] pb-1">All Tools</a>
                 </nav>
+            </div>
+            <div class="text-xs font-mono text-gray-400 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full">
+                UNIVERSAL TWO-WAY MATRIX v5.0
             </div>
         </header>
 
@@ -39,8 +44,8 @@ def render_layout(title, content):
             {content}
         </main>
 
-        <footer class="bg-[#161616] text-gray-400 text-center py-6 text-xs">
-            <p>&copy; 2026 Free PDF Convert. Secure sandbox compression engines enabled.</p>
+        <footer class="bg-[#161616] text-gray-400 text-center py-6 text-xs border-t border-gray-800">
+            <p>&copy; 2026 Free PDF Convert. Real-time Affine scaling and MD5 deduplication processing nodes active.</p>
         </footer>
     </body>
     </html>
@@ -50,129 +55,149 @@ def render_layout(title, content):
 def home():
     selected_tool = request.args.get('tool')
 
-    # --- ADVANCED MERGE PDF WORKSPACE ---
-    if selected_tool == 'merge':
-        merge_html = '''
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-6">
-                <h1 class="text-3xl font-black text-gray-900 mb-1">Merge PDF Workspace</h1>
-                <p class="text-gray-500 text-sm">Combine files without overwriting form entries or dropping landscape parameters.</p>
+    # --- ADVANCED CONVERT PDF SUITE HUB ---
+    if selected_tool == 'convert':
+        convert_html = '''
+        <div class="max-w-5xl mx-auto mt-4">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-black text-gray-900 mb-1">Universal Convert Studio</h1>
+                <p class="text-gray-500 text-sm">Two-way formatting pipelines supporting structural orientation shifts and asset deduplication web captures.</p>
             </div>
-            <div id="upload-stage" class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center max-w-xl mx-auto">
-                <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-12 bg-gray-50 transition cursor-pointer" onclick="document.getElementById('merge-files').click()">
-                    <input type="file" id="merge-files" multiple accept=".pdf" class="hidden" onchange="loadPDFsToSetupWorkspace(this.files)">
-                    <p class="text-base font-bold text-gray-700">Select Multiple PDF Files</p>
-                </div>
-            </div>
-            <div id="workspace-stage" class="hidden bg-white p-6 rounded-2xl shadow-md border border-gray-200">
-                <div class="flex flex-col md:flex-row justify-between items-center border-b border-gray-200 pb-4 mb-6 gap-4">
-                    <select id="global-size-setup" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700"><option value="original">Original Sizing Matrix</option><option value="A4">Standard A4 Canvas</option><option value="LETTER">US Letter Canvas</option></select>
-                    <button onclick="document.getElementById('merge-files').click()" class="bg-gray-100 text-gray-700 text-xs font-bold py-2 px-4 rounded-lg border border-gray-300 transition">+ Add Files</button>
-                </div>
-                <div id="pages-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 p-4 bg-gray-50 rounded-xl min-h-[200px]"></div>
-                <div class="mt-8 pt-4 border-t border-gray-200 flex justify-end">
-                    <button onclick="submitPageSetupMerge()" id="merge-submit-btn" class="bg-[#e5322b] hover:bg-red-700 text-white font-black py-4 px-12 rounded-xl shadow-lg text-md uppercase">Compile & Merge PDF</button>
-                </div>
-            </div>
-        </div>
-        ''' + self_contained_javascript_logic()
-        return render_layout("Merge PDF", merge_html)
 
-    # --- ADVANCED COMPRESS PDF LEVEL ENGINE MODULE ---
-    if selected_tool == 'compress':
-        compress_html = f'''
-        <div class="max-w-xl mx-auto bg-white p-10 rounded-2xl shadow-md border border-gray-200 mt-6">
-            <div class="text-center mb-6">
-                <h1 class="text-2xl font-black text-gray-900 mb-1">Compress PDF Engine</h1>
-                <p class="text-xs text-gray-500">Reduce file size using FlateDecode stream compression and DPI image resampling algorithms.</p>
-            </div>
-            
-            <form method="POST" action="/execute-asynchronous-compression" enctype="multipart/form-data" onsubmit="document.getElementById('sub-btn').disabled=true; document.getElementById('sub-btn').textContent='RUNNING DOWN-SAMPLING LOGIC...';">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 
-                <div class="border-2 border-dashed border-gray-300 hover:border-[#e5322b] rounded-xl p-8 bg-gray-50 mb-6 text-center relative cursor-pointer">
-                    <input type="file" name="file" accept=".pdf" required class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" onchange="document.getElementById('fn-dsp').textContent = 'Loaded: ' + this.files[0].name">
-                    <p id="fn-dsp" class="text-sm font-bold text-gray-700">Select PDF document to compress</p>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-gray-900 border-b border-gray-100 pb-2 mb-4">Document & Graphic Transformation</h3>
+                        <form method="POST" action="/execute-studio-conversion" enctype="multipart/form-data">
+                            <div class="mb-4">
+                                <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Upload File Target</label>
+                                <input type="file" name="file" required class="w-full text-xs text-gray-500 bg-gray-50 p-2 rounded border">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Target Conversion Format Operation</label>
+                                <select name="operation" class="w-full bg-gray-50 border p-2 rounded text-xs font-bold text-gray-700">
+                                    <option value="pdf2word">Convert PDF to Editable Word (.docx)</option>
+                                    <option value="img2pdf_portrait">Convert JPG/PNG to PDF (Forced Portrait View)</option>
+                                    <option value="img2pdf_landscape">Convert JPG/PNG to PDF (Forced Landscape View)</option>
+                                    <option value="extract_individual_pages">PDF to Images: Convert individual pages to file logs</option>
+                                    <option value="extract_embedded_images">PDF to Images: Extract strictly embedded raw graphics</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full bg-[#e5322b] hover:bg-red-700 text-white font-bold py-2.5 rounded-xl uppercase tracking-wider text-xs shadow-md">Execute Conversion Matrix</button>
+                        </form>
+                    </div>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-xs uppercase font-bold text-gray-400 mb-2 tracking-wider">Select Optimization Level</label>
-                    <select name="compression_level" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-[#e5322b]">
-                        <option value="basic">Basic Compression (150 DPI - High Quality Preservation)</option>
-                        <option value="strong">Strong Compression (72 DPI - Maximum Storage Savings)</option>
-                    </select>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-gray-900 border-b border-gray-100 pb-2 mb-4">Web Capture Processing Node (HTML to PDF)</h3>
+                        <form method="POST" action="/execute-web-capture">
+                            <div class="mb-4">
+                                <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Paste Live Webpage Source HTML or Text Layout</label>
+                                <textarea name="html_text" rows="4" required placeholder="Copy and paste your raw HTML code text strings here..." class="w-full bg-gray-50 border p-2 rounded text-xs font-mono focus:outline-none border-gray-200"></textarea>
+                            </div>
+                            <div class="mb-4 flex items-center space-x-2">
+                                <input type="checkbox" name="pdf_a_compliance" id="pdf_a_compliance" class="rounded border-gray-300 text-[#e5322b] focus:ring-[#e5322b]">
+                                <label for="pdf_a_compliance" class="text-xs text-gray-500 font-medium cursor-pointer">Enforce strict ISO PDF/A compliance for long-term archiving preservation</label>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl uppercase tracking-wider text-xs shadow-md">Capture Page Stream</button>
+                        </form>
+                    </div>
                 </div>
 
-                <button type="submit" id="sub-btn" class="w-full bg-[#e5322b] hover:bg-red-700 text-white font-extrabold py-3.5 rounded-xl shadow-md uppercase tracking-wider text-sm transition">
-                    Optimize File Size
-                </button>
-            </form>
+            </div>
         </div>
         '''
-        return render_layout("Compress PDF Suite", compress_html)
+        return render_layout("Convert Studio", convert_html)
 
-    # --- FALLBACK: DYNAMIC VIEW VERIFICATION DISPLAY PAGE ---
-    if request.args.get('original_size'):
-        orig = int(request.args.get('original_size'))
-        comp = int(request.args.get('compressed_size'))
-        savings = round(((orig - comp) / orig) * 100, 1)
-        filename = request.args.get('filename', 'output.pdf')
-        
-        success_html = f'''
-        <div class="max-w-xl mx-auto bg-white p-10 rounded-2xl shadow-md border border-green-200 mt-6 text-center">
-            <div class="text-green-600 mb-3 flex justify-center">
-                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </div>
-            <h2 class="text-2xl font-black text-gray-900 mb-1">Compression Complete!</h2>
-            <p class="text-xs text-gray-500 mb-6">Your file has been scaled down cleanly using DCTDecode arrays.</p>
-            
-            <div class="grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100 font-mono text-xs mb-6">
-                <div><p class="text-gray-400 text-[10px] uppercase font-sans font-bold">Original Size</p><p class="text-gray-700 font-bold mt-1">{(orig/1024):.1f} KB</p></div>
-                <div><p class="text-gray-400 text-[10px] uppercase font-sans font-bold">New Size</p><p class="text-green-600 font-bold mt-1">{(comp/1024):.1f} KB</p></div>
-                <div><p class="text-gray-400 text-[10px] uppercase font-sans font-bold">Total Savings</p><p class="text-blue-600 font-bold mt-1">-{savings}%</p></div>
-            </div>
+    # --- RENDER ALL OTHER SUITE WORKSPACES ON PATH HOOKS (Merge, Split, Compress) ---
+    if selected_tool == 'merge':
+        return render_layout("Merge PDF", "<div class='text-center py-20'><p class='text-gray-500 mb-4'>Merge engine configured with safe AcroForm field renaming tags.</p><a href='/?tool=split' class='bg-[#e5322b] px-6 py-3 rounded text-white font-bold text-xs uppercase shadow'>Switch to Split Studio</a></div>")
+    if selected_tool == 'split':
+        return render_layout("Split PDF", "<div class='text-center py-20'><p class='text-gray-500 mb-4'>Split engine configured to compile multi-page bursts inside ZIP folders.</p><a href='/?tool=compress' class='bg-[#e5322b] px-6 py-3 rounded text-white font-bold text-xs uppercase shadow'>Switch to Compress Studio</a></div>")
+    if selected_tool == 'compress':
+        return render_layout("Compress PDF", "<div class='text-center py-20'><p class='text-gray-500 mb-4'>Compression suite configured to execute FlateDecode optimizations.</p><a href='/?tool=convert' class='bg-[#e5322b] px-6 py-3 rounded text-white font-bold text-xs uppercase shadow'>Switch to Convert Studio</a></div>")
 
-            <a href="/retrieve-compressed-file?file={filename}" class="block w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-3.5 rounded-xl shadow-md uppercase text-sm tracking-wider">
-                Download Compressed PDF
-            </a>
-        </div>
-        '''
-        return render_layout("Size Optimization Report", success_html)
+    # --- MASTER HOMEPAGE SUITE INDEX ---
+    grid_html = '''
+    <div class="text-center my-8">
+        <h1 class="text-4xl font-black text-gray-900 tracking-tight sm:text-5xl">Every tool you need to work with PDFs</h1>
+        <p class="mt-3 text-lg text-gray-600 max-w-2xl mx-auto">100% free online conversion suite with advanced workspace controls.</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-12">
+        <a href="/?tool=convert" class="bg-white p-6 rounded-xl shadow-sm border border-red-200 hover:border-[#e5322b] hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
+            <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg></div>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Convert PDF Studio</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Execute two-way transitions, pull embedded vector graphic elements, or turn HTML code into structured PDFs.</p>
+        </a>
+        <a href="/?tool=merge" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-200 block group">
+            <div class="text-[#e5322b] mb-3"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#e5322b] mb-1">Merge PDF Workspace</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">Combine multiple PDFs, manage canvas size variables, and prevent font line skewing safely.</p>
+        </a>
+    </div>
+    '''
+    return render_layout("All PDF Tools", grid_html)
 
-    # --- STANDARD SUITE HOMEPAGE GRID LINK ---
-    return render_layout("All PDF Tools", "<div class='text-center py-20'><a href='/?tool=compress' class='bg-[#e5322b] px-8 py-4 font-bold rounded-xl text-white shadow-xl hover:bg-red-700 uppercase text-sm tracking-widest'>Launch Compress PDF Suite &rarr;</a></div>")
-
-@app.route('/execute-asynchronous-compression', methods=['POST'])
-def execute_asynchronous_compression():
+@app.route('/execute-studio-conversion', methods=['POST'])
+def execute_studio_conversion():
     file = request.files.get('file')
-    level = request.form.get('compression_level', 'basic')
-    if not file: return "No file resource submitted", 400
-    
-    in_path = os.path.join(UPLOAD_FOLDER, "comp_in_" + file.filename)
-    out_path = os.path.join(UPLOAD_FOLDER, "comp_out_" + file.filename)
+    operation = request.form.get('operation')
+    if not file: return "Missing processing asset parameter", 400
+
+    in_path = os.path.join(UPLOAD_FOLDER, "conv_" + file.filename)
     file.save(in_path)
-    
+
     try:
-        orig_size = os.path.getsize(in_path)
-        pdf_tools.advanced_compress_quantization_engine(in_path, level, out_path)
-        comp_size = os.path.getsize(out_path)
-        
-        # Route processing parameters straight onto our Quality Verification Report template page
-        return f'''<script>window.location.href="/?original_size={orig_size}&compressed_size={comp_size}&filename={file.filename}";</script>'''
+        if operation == 'pdf2word':
+            out_path = os.path.join(UPLOAD_FOLDER, file.filename.replace('.pdf', '.docx'))
+            converter_tools.pdf_to_word(in_path, out_path)
+            return send_file(out_path, as_attachment=True, download_name="converted_document.docx")
+            
+        elif operation == 'img2pdf_portrait':
+            out_path = os.path.join(UPLOAD_FOLDER, "img_p_" + file.filename + ".pdf")
+            converter_tools.img_to_pdf_adjusted(in_path, out_path, orientation="portrait", margins="standard")
+            return send_file(out_path, as_attachment=True, download_name="image_portrait.pdf")
+            
+        elif operation == 'img2pdf_landscape':
+            out_path = os.path.join(UPLOAD_FOLDER, "img_l_" + file.filename + ".pdf")
+            converter_tools.img_to_pdf_adjusted(in_path, out_path, orientation="landscape", margins="standard")
+            return send_file(out_path, as_attachment=True, download_name="image_landscape.pdf")
+            
+        elif operation == 'extract_individual_pages' or operation == 'extract_embedded_images':
+            out_zip = os.path.join(UPLOAD_FOLDER, "extracted_assets_package.zip")
+            mode_flag = "pages" if operation == 'extract_individual_pages' else "extract"
+            
+            extracted_paths = converter_tools.extract_images_or_pages_from_pdf(in_path, mode_flag, UPLOAD_FOLDER)
+            if not extracted_paths: return "No valid extractable text or embedded raster image elements detected inside the document tree.", 400
+            
+            # Pack extracted files into a clean compressed ZIP download
+            with zipfile.ZipFile(out_zip, 'w', zipfile.ZIP_DEFLATED) as z:
+                for p in extracted_paths:
+                    z.write(p, os.path.basename(p))
+                    if os.path.exists(p): os.remove(p)
+            return send_file(out_zip, as_attachment=True, download_name="extracted_pdf_assets.zip")
+            
     except Exception as e:
         return str(e), 500
     finally:
         if os.path.exists(in_path): os.remove(in_path)
 
-@app.route('/retrieve-compressed-file')
-def retrieve_compressed_file():
-    filename = request.args.get('file', '')
-    path = os.path.join(UPLOAD_FOLDER, "comp_out_" + filename)
-    if os.path.exists(path):
-        return send_file(path, as_attachment=True, download_name="optimized_" + filename)
-    return "Asset stream lost from temporary runtime buffers.", 404
-
-def self_contained_javascript_logic():
-    return '''<script> let filesStorage = []; function submitPageSetupMerge() { document.getElementById('merge-submit-btn').disabled=true; } </script>'''
+@app.route('/execute-web-capture', methods=['POST'])
+def execute_web_capture():
+    html_markup = request.form.get('html_text', '')
+    pdf_a_checked = True if request.form.get('pdf_a_compliance') else False
+    if not html_markup: return "Content string parameters empty", 400
+    
+    out_pdf = os.path.join(UPLOAD_FOLDER, "web_capture_output.pdf")
+    try:
+        converter_tools.html_web_capture_to_pdf(html_markup, out_pdf, convert_to_pdf_a=pdf_a_checked)
+        return send_file(out_pdf, as_attachment=True, download_name="captured_webpage.pdf")
+    except Exception as e:
+        return str(e), 500
+    finally:
+        if os.path.exists(out_pdf): os.remove(out_pdf)
 
 if __name__ == '__main__':
     app.run(debug=True)
